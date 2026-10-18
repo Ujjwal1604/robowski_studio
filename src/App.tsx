@@ -1,9 +1,16 @@
+import { useEffect, useRef } from 'react';
+import { mountRobowski } from '@/ui/robowskiUI';
+
 function App() {
-  return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <p>Start prompting (or editing) to see magic happen :)</p>
-    </div>
-  );
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (rootRef.current) {
+      mountRobowski(rootRef.current);
+    }
+  }, []);
+
+  return <div ref={rootRef} className="robowski-root" />;
 }
 
 export default App;

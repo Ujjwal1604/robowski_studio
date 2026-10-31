@@ -1,0 +1,570 @@
+    /* STYLE 03 - layout of the screens: logo, step tabs (.steps .step), page widths (.wrap .bodyw), the Setup / Deck / Export / Runs
+       grids, the reagent table, triplet panel, phone layouts (@media max-width:700px), print rules (@media print) and
+       reduced-motion at the end. Change spacing, column counts or the mobile layout here. */
+      font-size: 12px;
+      color: var(--mut);
+      margin-top: 6px;
+      line-height: 1.5
+    }
+
+
+    /* ---- mockup-fidelity layer ---- */
+    .topin {
+      max-width: none;
+      margin: 0;
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px 24px;
+      flex-wrap: wrap;
+      padding: 8px max(32px, env(safe-area-inset-right, 0px)) 8px max(32px, env(safe-area-inset-left, 0px))
+    }
+
+    /* Logo / app name in the header. */
+    .logo {
+      background: none;
+      border: 0;
+      padding: 0;
+      color: inherit;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 19px;
+      letter-spacing: -.02em;
+      transition: opacity .18s var(--ease)
+    }
+
+    .logo:hover {
+      opacity: .8
+    }
+
+    .hdot {
+      width: 8px;
+      height: 8px;
+      border-radius: 4px;
+      display: inline-block;
+      box-shadow: 0 0 0 3px rgba(31, 157, 107, .18)
+    }
+
+    .topr {
+      display: flex;
+      align-items: center;
+      gap: 16px
+    }
+
+    .rname {
+      text-align: right;
+      font-size: 13px;
+      font-weight: 500;
+      max-width: 240px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap
+    }
+
+    .rname .hint {
+      font-weight: 400
+    }
+
+    .avatar {
+      font-size: 18px !important;
+      width: 36px;
+      height: 36px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: var(--accbg);
+      color: var(--accfg);
+      font-weight: 600;
+      font-size: 15px;
+      padding: 0;
+      transition: background .18s var(--ease), transform .12s var(--ease)
+    }
+
+    .avatar:hover {
+      transform: scale(1.05)
+    }
+
+    .runsl {
+      border: 0;
+      background: none;
+      font-weight: 500;
+      color: var(--mut);
+      padding: 8px 2px;
+      border-bottom: 2px solid transparent;
+      transition: color .18s var(--ease), border-color .18s var(--ease)
+    }
+
+    .runsl:hover {
+      color: var(--fg2)
+    }
+
+    .runsl.on {
+      color: var(--fg);
+      border-bottom-color: var(--acc)
+    }
+
+    /* Bar under the header holding the step tabs. */
+    .stepsbar {
+      border-top: 1px solid var(--line);
+      background: color-mix(in srgb, var(--panel) 80%, transparent)
+    }
+
+    .steps {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+      padding: 0 max(32px, env(safe-area-inset-left, 0px));
+      overflow-x: auto
+    }
+
+    /* One step tab (Setup, Combinations, Deck, Export). */
+    .step {
+      border: 0;
+      background: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--mut);
+      padding: 14px 4px;
+      white-space: nowrap;
+      transition: color .18s var(--ease), box-shadow .18s var(--ease)
+    }
+
+    .step b {
+      width: 24px;
+      height: 24px;
+      border-radius: 12px;
+      border: 1.5px solid var(--offbd);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      transition: background .18s var(--ease), border-color .18s var(--ease), color .18s var(--ease)
+    }
+
+    .step:hover {
+      color: var(--fg2)
+    }
+
+    .step.on {
+      color: var(--fg);
+      box-shadow: inset 0 -2px 0 var(--acc)
+    }
+
+    .step.on b {
+      background: var(--acc);
+      border-color: var(--acc);
+      color: var(--acc-fg)
+    }
+
+    .sband {
+      background: linear-gradient(180deg, var(--accbg), color-mix(in srgb, var(--accbg) 70%, var(--bg)));
+      border-bottom: 1px solid var(--line);
+      color: var(--fg2);
+      font-size: 13px
+    }
+
+    .sbin {
+      display: flex;
+      gap: 10px 26px;
+      flex-wrap: wrap;
+      align-items: center;
+      padding: 10px max(32px, env(safe-area-inset-left, 0px))
+    }
+
+    .sbin b {
+      color: var(--fg);
+      font-weight: 600
+    }
+
+    .wrap {
+      padding-top: 24px
+    }
+
+    .bodyw {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      align-items: flex-start;
+      padding: 28px max(32px, env(safe-area-inset-left, 0px)) 40px
+    }
+
+    .lcol {
+      flex: 999 1 720px;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 24px
+    }
+
+    .rcol {
+      flex: 1 1 340px;
+      min-width: min(300px, 100%);
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      position: static
+    }
+
+    .card.pad {
+      padding: 24px
+    }
+
+    .chead {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 18px
+    }
+
+    .ct {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -.01em
+    }
+
+    .cnt {
+      font-weight: 400;
+      color: var(--mut);
+      font-size: 14px;
+      margin-left: 6px
+    }
+
+    .pgrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 20px
+    }
+
+    .pgrid .lbl {
+      margin-bottom: 8px
+    }
+
+    .seg.full {
+      display: flex;
+      width: 100%
+    }
+
+    .seg.full button {
+      flex: 1;
+      padding: 0 6px
+    }
+
+    .note {
+      margin-top: 14px;
+      font-size: 13px;
+      color: var(--mut);
+      line-height: 1.5
+    }
+
+    input.f,
+    select.f {
+      height: 40px;
+      border: 1px solid var(--offbd);
+      border-radius: 9px;
+      background-color: var(--panel);
+      padding: 0 12px;
+      font-size: 14px;
+      width: 100%;
+      min-width: 0;
+      transition: border-color .18s var(--ease), box-shadow .18s var(--ease)
+    }
+
+    input.f:hover,
+    select.f:hover {
+      border-color: var(--mut)
+    }
+
+    input.f.mono {
+      font: 500 14px 'IBM Plex Mono', monospace
+    }
+
+    select.f.sm {
+      height: 30px;
+      font-size: 12px;
+      padding: 0 4px;
+      width: 84px;
+      background-position: right 4px center
+    }
+
+    .rw {
+      display: grid;
+      grid-template-columns: 48px minmax(120px, 1.6fr) 96px 84px 104px 128px 136px;
+      gap: 10px;
+      align-items: center
+    }
+
+    .rw.th {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--mut);
+      padding-bottom: 8px;
+      letter-spacing: .02em
+    }
+
+    .rrow {
+      margin-bottom: 10px
+    }
+
+    .code {
+      width: 40px;
+      height: 40px;
+      border-radius: 11px;
+      background: var(--fg);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font: 600 14px 'IBM Plex Mono', monospace;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, .14)
+    }
+
+    input.code-in {
+      border: 0;
+      padding: 0;
+      text-align: center;
+      cursor: text;
+      min-width: 0
+    }
+
+    input.code-in:focus {
+      outline: 2px solid var(--acc);
+      outline-offset: 2px
+    }
+
+    .code.sm {
+      width: 34px;
+      height: 34px;
+      font-size: 13px;
+      flex: none
+    }
+
+    .racts {
+      display: flex;
+      gap: 4px;
+      align-items: center
+    }
+
+    .ib {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      padding: 0;
+      font-size: 13px;
+      flex: none;
+      transition: background .15s var(--ease), border-color .15s var(--ease), transform .08s var(--ease)
+    }
+
+    .ib:hover:not(:disabled) {
+      background: var(--soft);
+      border-color: var(--offbd)
+    }
+
+    .ib:active:not(:disabled) {
+      transform: translateY(1px)
+    }
+
+    .ib:disabled {
+      opacity: .35;
+      cursor: not-allowed
+    }
+
+    .ib.ph {
+      border: 0;
+      background: none
+    }
+
+    .rrow .hint {
+      margin: 4px 0 0 58px
+    }
+
+    .btn.lg {
+      height: 44px;
+      padding: 0 20px;
+      border-radius: 11px;
+      font-size: 15px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .btns {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      flex-wrap: wrap
+    }
+
+    .big {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-top: 6px
+    }
+
+    .big b {
+      font-size: 48px;
+      font-weight: 600;
+      letter-spacing: -.04em;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--fg), var(--acc));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent
+    }
+
+    .big span {
+      font-size: 16px;
+      color: var(--fg2)
+    }
+
+    .hr {
+      height: 1px;
+      background: var(--line2);
+      margin: 20px 0
+    }
+
+    .crows {
+      display: flex;
+      flex-direction: column;
+      gap: 12px
+    }
+
+    .crow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px
+    }
+
+    .chip {
+      gap: 6px
+    }
+
+    .det {
+      margin-top: 12px
+    }
+
+    .det summary {
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--fg2);
+      margin-bottom: 8px;
+      transition: color .15s var(--ease)
+    }
+
+    .det summary:hover {
+      color: var(--fg)
+    }
+
+    .prow {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line2)
+    }
+
+    .prow:last-child {
+      border-bottom: 0
+    }
+
+    .pv {
+      font-size: 15px;
+      font-weight: 500
+    }
+
+    .issue {
+      border-radius: 10px;
+      padding: 14px;
+      line-height: 1.5
+    }
+
+    .card h2 {
+      font-size: 17px
+    }
+
+    @media(max-width:700px) {
+      .topin {
+        padding-left: max(16px, env(safe-area-inset-left, 0px));
+        padding-right: max(16px, env(safe-area-inset-right, 0px))
+      }
+
+      .steps,
+      .sbin {
+        padding-left: max(16px, env(safe-area-inset-left, 0px));
+        padding-right: max(16px, env(safe-area-inset-right, 0px));
+        gap: 18px
+      }
+
+      .bodyw {
+        padding-left: max(16px, env(safe-area-inset-left, 0px));
+        padding-right: max(16px, env(safe-area-inset-right, 0px))
+      }
+
+      .rname {
+        display: none
+      }
+
+      .rcol {
+        position: static
+      }
+    }
+
+    .wrap {
+      padding-left: max(32px, env(safe-area-inset-left, 0px));
+      padding-right: max(32px, env(safe-area-inset-right, 0px));
+      padding-bottom: 48px
+    }
+
+    .avatar {
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .empty-note {
+      padding: 24px !important
+    }
+
+    @media(max-width:700px) {
+      .wrap {
+        padding-left: max(16px, env(safe-area-inset-left, 0px));
+        padding-right: max(16px, env(safe-area-inset-right, 0px))
+      }
+    }
+
+    /* Bench printing (Deck and Export screens): drop the app chrome, one column, no shadows */
+    /* Printing the page itself (hides the header and buttons). The separate bench_sheet.html has its own print rules in engine/45. */
+    @media print {
+      @page { margin: 12mm }
+      .top, .stepsbar, .sband, .toast, .tip, .modal-overlay, button, .btn, .seg, .runsl { display: none !important }
+      html, body { background: #fff !important; background-image: none !important; color: #000 !important }
+      .bodyw { max-width: none !important; padding: 0 !important; display: block !important }
+      .grid, .grid.two, .grid.eq, .lcol, .rcol { display: block !important }
+      .card, .rcard, .prow { box-shadow: none !important; border: 1px solid #bbb !important; break-inside: avoid; margin-bottom: 10px !important }
+      .list > div { break-inside: avoid }
+      a { color: inherit !important }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important
+      }
+    }

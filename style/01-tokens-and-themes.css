@@ -1,0 +1,109 @@
+    /* STYLE 01 - THE COLOUR PALETTE (start here for any colour change).
+       Every colour in the app is a variable (--name) defined once for light mode in :root, then redefined for dark
+       mode twice: under prefers-color-scheme (automatic) and under [data-theme="dark"] (when the user presses the
+       theme button). To change a colour, change the variable in ALL THREE places so light, auto-dark and manual dark stay in sync.
+       Main ones: --bg page background, --panel card background, --fg text, --acc brand green (buttons, active tab),
+       --warn/--bad/--ok message colours, --fill bottle fill colour, --shadow* card shadows. */
+    :root {
+      --bg: #F4F5F1;
+      --panel: #FFFFFF;
+      --soft: #EDF1EB;
+      --line: #DBDFD7;
+      --line2: #E7EAE3;
+      --fg: #14211E;
+      --fg2: #46524E;
+      --mut: #69746F;
+      --acc: #0B6B5F;
+      --acc-fg: #fff;
+      --accbg: #DCEFEB;
+      --accfg: #0A5A50;
+      --warn: #7A3F00;
+      --warnbg: #FFF1DC;
+      --bad: #9A2B22;
+      --badbg: #FCE7E4;
+      --ok: #0A5A50;
+      --okbg: #DCEFEB;
+      --blue: #3A6FD6;
+      --fill: #FFE7A3;
+      --fillbd: #A87B14;
+      --empty: #fff;
+      --emptybd: #6B746F;
+      --off: #EEEFEC;
+      --offbd: #C9CDC6;
+      --shadow: 0 1px 2px rgba(20, 33, 30, .08), 0 1px 1px rgba(20, 33, 30, .04);
+      --shadow-md: 0 4px 14px rgba(20, 33, 30, .08), 0 1px 3px rgba(20, 33, 30, .06);
+      --shadow-lg: 0 18px 48px rgba(20, 33, 30, .12), 0 4px 12px rgba(20, 33, 30, .06);
+      --ring: 0 0 0 3px rgba(11, 107, 95, .22);
+      --ease: cubic-bezier(.4, 0, .2, 1);
+      --ease-out: cubic-bezier(.16, 1, .3, 1)
+    }
+
+    /* Dark palette used automatically when the computer is in dark mode (unless the user picked light). */
+    @media (prefers-color-scheme:dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #0E1513;
+        --panel: #161F1D;
+        --soft: #1E2A27;
+        --line: #2C3B38;
+        --line2: #23302E;
+        --fg: #E8F0EC;
+        --fg2: #BAC7C2;
+        --mut: #90A19B;
+        --acc: #3FB8A5;
+        --acc-fg: #07211D;
+        --accbg: #173A35;
+        --accfg: #8FE0D2;
+        --warn: #F2C27A;
+        --warnbg: #3A2C14;
+        --bad: #FF9D92;
+        --badbg: #3F1D19;
+        --ok: #8FE0D2;
+        --okbg: #173A35;
+        --blue: #6C9BF0;
+        --fill: #5A4A1C;
+        --fillbd: #D9AE45;
+        --empty: #161F1D;
+        --emptybd: #90A19B;
+        --off: #1A2422;
+        --offbd: #33423F;
+        --shadow: none;
+        --shadow-md: 0 6px 22px rgba(0, 0, 0, .34);
+        --shadow-lg: 0 22px 56px rgba(0, 0, 0, .48);
+        --ring: 0 0 0 3px rgba(63, 184, 165, .32);
+        color-scheme: dark
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --bg: #0E1513;
+      --panel: #161F1D;
+      --soft: #1E2A27;
+      --line: #2C3B38;
+      --line2: #23302E;
+      --fg: #E8F0EC;
+      --fg2: #BAC7C2;
+      --mut: #90A19B;
+      --acc: #3FB8A5;
+      --acc-fg: #07211D;
+      --accbg: #173A35;
+      --accfg: #8FE0D2;
+      --warn: #F2C27A;
+      --warnbg: #3A2C14;
+      --bad: #FF9D92;
+      --badbg: #3F1D19;
+      --ok: #8FE0D2;
+      --okbg: #173A35;
+      --blue: #6C9BF0;
+      --fill: #5A4A1C;
+      --fillbd: #D9AE45;
+      --empty: #161F1D;
+      --emptybd: #90A19B;
+      --off: #1A2422;
+      --offbd: #33423F;
+      --shadow: none;
+      --shadow-md: 0 6px 22px rgba(0, 0, 0, .34);
+      --shadow-lg: 0 22px 56px rgba(0, 0, 0, .48);
+      --ring: 0 0 0 3px rgba(63, 184, 165, .32);
+      color-scheme: dark
+    }
+

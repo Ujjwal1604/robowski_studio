@@ -901,3 +901,61 @@
     }
 
     .hint {
+
+    /* Search input wrapper with magnifier icon (Runs page). */
+    .searchwrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center
+    }
+    .searchwrap .searchicon {
+      position: absolute;
+      left: 9px;
+      color: var(--mut);
+      pointer-events: none;
+      z-index: 1
+    }
+
+    /* Empty state on the Runs page. */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 48px 24px !important;
+      border-style: dashed
+    }
+    .empty-icon {
+      margin-bottom: 12px;
+      opacity: .6
+    }
+
+    /* Hover lift for run cards on the Runs page. */
+    .runcard {
+      transition: box-shadow .25s var(--ease), border-color .25s var(--ease), transform .18s var(--ease)
+    }
+    .runcard:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--offbd)
+    }
+    .runcard:active {
+      transform: translateY(1px)
+    }
+
+    /* Step tab warning dot pulse. */
+    .step.warn b {
+      animation: pulseDot 1.8s ease-in-out infinite
+    }
+    @keyframes pulseDot {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(122, 63, 0, .4) }
+      50% { box-shadow: 0 0 0 4px rgba(122, 63, 0, 0) }
+    }
+    :root[data-theme="dark"] .step.warn b {
+      animation: pulseDotDark 1.8s ease-in-out infinite
+    }
+    @keyframes pulseDotDark {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(242, 194, 122, .4) }
+      50% { box-shadow: 0 0 0 4px rgba(242, 194, 122, 0) }
+    }
+

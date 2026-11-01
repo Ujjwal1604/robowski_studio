@@ -943,6 +943,18 @@
       transform: translateY(1px)
     }
 
+    /* Draft auto-save indicator in the header. */
+    .dsave {
+      color: var(--ok);
+      font-size: 11px;
+      animation: dsaveFade 3s ease-out forwards
+    }
+    @keyframes dsaveFade {
+      0% { opacity: 1 }
+      70% { opacity: 1 }
+      100% { opacity: 0 }
+    }
+
     /* Step tab warning dot pulse. */
     .step.warn b {
       animation: pulseDot 1.8s ease-in-out infinite

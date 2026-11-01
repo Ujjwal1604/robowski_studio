@@ -18,16 +18,17 @@
         return { m: [...new Set(m)], inv };
       }
       // Runs the engine on the current state; sets the global run (result) or err. Called after every edit.
+      function saveDraft() { if (ls.set('rs.draft2', JSON.stringify(S))) { draftSavedAt = Date.now(); } else if (!compute.warned) { compute.warned = true; toast('This browser is blocking storage, so your draft will not survive a reload. Export or save the run as a file to keep it.'); } }
       function compute() {
         const v = validate(); missing = v.m; invalid = v.inv;
         allEmpty = S.mode === 'triplet' ? (S.reagents.every(r => r.stock === '' || r.stock == null) && !S.tri.groups.length) : (!S.imported && S.reagents.every(r => r.stock === '' || r.stock == null) && S.sets.every(s => s.items.every(it => it.min === '' || it.min == null)));
         if (allEmpty) invalid = new Set();
         blank = missing.length > 0; vialFocus = null; triPending = false;
-        if (blank) { run = null; rowsCache = []; setOf = []; clearTimeout(fixTimer); err = allEmpty ? (S.mode === 'triplet' ? 'Fill in the stock concentrations of the reagents you use and add some groups to see the plate.' : 'Fill in the reagents and the vial-set ranges to see the checks, combinations and deck.') : 'Still to fill in: ' + missing.slice(0, 5).join(', ') + (missing.length > 5 ? ' …' : '') + '.'; fixes = []; if (!ls.set('rs.draft2', JSON.stringify(S)) && !compute.warned) { compute.warned = true; toast('This browser is blocking storage, so your draft will not survive a reload. Export or save the run as a file to keep it.'); } return; }
+        if (blank) { run = null; rowsCache = []; setOf = []; clearTimeout(fixTimer); err = allEmpty ? (S.mode === 'triplet' ? 'Fill in the stock concentrations of the reagents you use and add some groups to see the plate.' : 'Fill in the reagents and the vial-set ranges to see the checks, combinations and deck.') : 'Still to fill in: ' + missing.slice(0, 5).join(', ') + (missing.length > 5 ? ' …' : '') + '.'; fixes = []; saveDraft(); return; }
         let tb = null;
         if (S.mode === 'triplet') {
-          try { tb = triBuildRows(); } catch (e) { run = null; rowsCache = []; setOf = []; triMeta = []; clearTimeout(fixTimer); fixes = []; err = e.message; if (!ls.set('rs.draft2', JSON.stringify(S)) && !compute.warned) { compute.warned = true; toast('This browser is blocking storage, so your draft will not survive a reload. Export or save the run as a file to keep it.'); } return; }
-          if (!tb) { triPending = true; run = null; rowsCache = []; setOf = []; triMeta = []; clearTimeout(fixTimer); fixes = []; err = 'Assign a group to at least one section to see the volumes.'; if (!ls.set('rs.draft2', JSON.stringify(S)) && !compute.warned) { compute.warned = true; toast('This browser is blocking storage, so your draft will not survive a reload. Export or save the run as a file to keep it.'); } return; }
+          try { tb = triBuildRows(); } catch (e) { run = null; rowsCache = []; setOf = []; triMeta = []; clearTimeout(fixTimer); fixes = []; err = e.message; saveDraft(); return; }
+          if (!tb) { triPending = true; run = null; rowsCache = []; setOf = []; triMeta = []; clearTimeout(fixTimer); fixes = []; err = 'Assign a group to at least one section to see the volumes.'; saveDraft(); return; }
           rowsCache = tb.rows; triBlank = tb.blank; triMeta = tb.meta; setOf = tb.rows.map(() => 0);
         }
         try { if (!tb) { const b = buildRows(); rowsCache = b.rows; setOf = b.setOf; } run = C.buildRun(data()); err = null; } catch (e) { run = null; err = e.message; }
@@ -35,7 +36,7 @@
         fixesDone = false; whyNot = [];
         fixesBusy = false;
         if (run && run.blockingIssues > 0 && run.reactions <= FIX_AUTO_MAX) fixTimer = setTimeout(runFixSearch, 250);
-        if (!ls.set('rs.draft2', JSON.stringify(S)) && !compute.warned) { compute.warned = true; toast('This browser is blocking storage, so your draft will not survive a reload. Export or save the run as a file to keep it.'); }
+        saveDraft();
       }
       /* searching for verified fixes runs on the main thread: automatic for small runs, on a button for big ones (so typing never freezes) */
       // Fix search runs automatically only up to this many vials; larger runs use the button.

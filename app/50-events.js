@@ -15,7 +15,7 @@
         setPath(k, v); if (k === 'tri.reps') triSync(); compute();
         if (k === 'randomize') { render(); return; }
         if (view === 'setup') { paintLive(); if (/^reagents\.\d+\.name$/.test(k)) { refreshLabels(); paintTri('triplates'); } else if (/^tri\.groups\./.test(k)) paintTri('triplates'); }
-        if (t.id === 'runsearch') { runSearch = t.value; if (view === 'runs') render(); }
+        if (t.id === 'runsearch') { runSearch = t.value; if (view === 'runs') paintRunsList(); }
       });
       document.addEventListener('change', e => {
         const t = e.target;
@@ -44,10 +44,10 @@
         if (t.type === 'checkbox' && t.dataset.k) { setPath(t.dataset.k, t.checked); compute(); render(); return; }
         if (t.dataset && t.dataset.act === 'pick' && t.value) { const x = lib.find(l => l.id === t.value); if (x) { const r = S.reagents[+t.dataset.i]; r.name = x.name; r.molarMass = x.molarMass; r.density = x.density || 0; r.smiles = x.smiles || r.smiles || ''; r.iupac = x.iupac || r.iupac || ''; compute(); render(); } }
         if (t.dataset && t.dataset.dp) { const dp = S.deckPlates || (S.deckPlates = C.defaultPlates(S.hood)); dp[t.dataset.dp] = t.dataset.dp === 'solventKind' ? t.value : +t.value; compute(); render(); return; }
-        if (t.id === 'file' && t.files[0]) importFile(t.files[0]);
-        if (t.id === 'file2' && t.files[0]) importRobot(t.files[0]);
-        if (t.id === 'file4' && t.files[0]) { const f = t.files[0]; t.value = ''; restoreBackup(f); }
-        if (t.id === 'file3' && t.files[0]) { const f = t.files[0]; t.value = ''; importLibrary(f); }
+        if (t.id === 'file' && t.files[0]) { toast('Reading file…'); importFile(t.files[0]); }
+        if (t.id === 'file2' && t.files[0]) { toast('Reading robot file…'); importRobot(t.files[0]); }
+        if (t.id === 'file4' && t.files[0]) { const f = t.files[0]; t.value = ''; toast('Restoring backup…'); restoreBackup(f); }
+        if (t.id === 'file3' && t.files[0]) { const f = t.files[0]; t.value = ''; toast('Reading library file…'); importLibrary(f); }
       });
       document.addEventListener('click', async e => {
         const b = e.target.closest('[data-act]'); if (!b || b.tagName === 'SELECT' || b.tagName === 'INPUT') return;
@@ -86,10 +86,10 @@
         else if (a === 'fix') { const f = fixes[i]; if (f) { const u = snap(); const { stocks, ...rest } = f.patch; Object.assign(S, rest); if (stocks) Object.entries(stocks).forEach(([k, v]) => { S.reagents[+k].stock = v; }); compute(); render(); toast('Applied: ' + f.label, u); } }
         else if (a === 'pg') { page += +v; render(); }
         else if (a === 'fbad') { filterBad = !filterBad; page = 0; render(); }
-        else if (a === 'rf') { runFilter = v; render(); }
-        else if (a === 'cmp') { const id2 = b.dataset.id; const ix = compareIds.indexOf(id2); if (ix >= 0) compareIds.splice(ix, 1); else if (compareIds.length < 2) compareIds.push(id2); render(); }
+        else if (a === 'rf') { runFilter = v; if (view === 'runs') paintRunsList(); else render(); }
+        else if (a === 'cmp') { const id2 = b.dataset.id; const ix = compareIds.indexOf(id2); if (ix >= 0) compareIds.splice(ix, 1); else if (compareIds.length < 2) compareIds.push(id2); if (view === 'runs') paintRunsList(); else render(); }
         else if (a === 'cmpgo') { if (compareIds.length === 2) { view = 'compare'; render(); window.scrollTo(0, 0); } }
-        else if (a === 'cmpclear') { compareIds = []; render(); }
+        else if (a === 'cmpclear') { compareIds = []; if (view === 'runs') paintRunsList(); else render(); }
         else if (a === 'dl') await doDownload(v);
         else if (a === 'preview') openPreview(v);
         else if (a === 'closepreview') closePreview();

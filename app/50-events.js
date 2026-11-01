@@ -15,6 +15,7 @@
         setPath(k, v); if (k === 'tri.reps') triSync(); compute();
         if (k === 'randomize') { render(); return; }
         if (view === 'setup') { paintLive(); if (/^reagents\.\d+\.name$/.test(k)) { refreshLabels(); paintTri('triplates'); } else if (/^tri\.groups\./.test(k)) paintTri('triplates'); }
+        if (t.id === 'runsearch') { runSearch = t.value; if (view === 'runs') render(); }
       });
       document.addEventListener('change', e => {
         const t = e.target;
@@ -86,6 +87,9 @@
         else if (a === 'pg') { page += +v; render(); }
         else if (a === 'fbad') { filterBad = !filterBad; page = 0; render(); }
         else if (a === 'rf') { runFilter = v; render(); }
+        else if (a === 'cmp') { const id2 = b.dataset.id; const ix = compareIds.indexOf(id2); if (ix >= 0) compareIds.splice(ix, 1); else if (compareIds.length < 2) compareIds.push(id2); render(); }
+        else if (a === 'cmpgo') { if (compareIds.length === 2) { view = 'compare'; render(); window.scrollTo(0, 0); } }
+        else if (a === 'cmpclear') { compareIds = []; render(); }
         else if (a === 'dl') await doDownload(v);
         else if (a === 'preview') openPreview(v);
         else if (a === 'closepreview') closePreview();

@@ -163,7 +163,7 @@
           else if (kind === 'load') ok = await saveFile('deck_load_checklist.csv', C.loadCsv(run));
           else if (kind === 'png') ok = await saveFile('run_card.png', await C.runCardPngBytes(run));
           else if (kind === 'zip') { let png = null; try { png = await C.runCardPngBytes(run); } catch (e) { } ok = await saveFile('robowski_package.zip', C.packageBytes(run, png)); }
-          if (ok) status = 'exported';
+          if (ok) { status = 'exported'; if (S.id) { const r = runsList.find(x => x.id === S.id); if (r) { r.exports = r.exports || []; r.exports.push({ t: Date.now(), kind }); if (r.exports.length > 50) r.exports = r.exports.slice(-50); r.status = 'exported'; r.updated = Date.now(); try { await putRun(r); } catch (e) { } } } }
         } catch (e) { toast('Export failed: ' + e.message); }
       }
       let nbPending = null;

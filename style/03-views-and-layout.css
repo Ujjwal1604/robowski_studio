@@ -1,6 +1,8 @@
-    /* STYLE 03 - layout of the screens: logo, step tabs (.steps .step), page widths (.wrap .bodyw), the Setup / Deck / Export / Runs
+/* STYLE 03 - layout of the screens: logo, step tabs (.steps .step), page widths (.wrap .bodyw), the Setup / Deck / Export / Runs
        grids, the reagent table, triplet panel, phone layouts (@media max-width:700px), print rules (@media print) and
        reduced-motion at the end. Change spacing, column counts or the mobile layout here. */
+
+    .hint {
       font-size: 12px;
       color: var(--mut);
       margin-top: 6px;

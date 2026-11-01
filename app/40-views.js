@@ -22,7 +22,7 @@
       function reagentRow(r, i) {
         const c = rcol(i), inl = inlineRanges(), it = inl ? S.sets[0].items[i] : null, unit = (S.mode === 'equivalence' && i > 0) ? 'equiv.' : 'mM';
         return `<div class="rrow" data-i="${i}"><div class="rw">
-  <input type="text" class="code code-in" style="background:${c};font-size:${r.code.length <= 4 ? 14 : r.code.length <= 6 ? 11 : 9}px" data-code="${i}" value="${esc(r.code)}" maxlength="8" autocomplete="off" spellcheck="false" aria-label="Reagent ${i + 1} code" title="Added #${i + 1}. Click to rename this code (letters, numbers, _ and -).">
+  <input type="text" class="code code-in" style="background:${c};font-size:${r.code.length <= 4 ? 14 : r.code.length <= 6 ? 11 : r.code.length <= 10 ? 9 : 7}px" data-code="${i}" value="${esc(r.code)}" maxlength="24" autocomplete="off" spellcheck="false" aria-label="Reagent ${i + 1} code" title="Added #${i + 1}. Click to rename this code (letters, numbers, _ and -).">
   <input type="text" class="f" data-k="reagents.${i}.name" list="libnames" autocomplete="off" value="${esc(r.name)}" aria-label="${esc(r.code)} name" placeholder="name (library suggests)">
   <input type="number" class="f mono" step="any" data-k="reagents.${i}.molarMass" value="${r.molarMass}" aria-label="${esc(r.code)} molar mass">
   <input type="number" class="f mono" step="any" data-k="reagents.${i}.density" value="${r.density || ''}" placeholder="solid" aria-label="${esc(r.code)} density">

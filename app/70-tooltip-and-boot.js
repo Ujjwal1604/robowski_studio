@@ -24,6 +24,7 @@
           i = k === 'Home' ? 0 : k === 'End' ? tabs.length - 1 : (i + (k === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
           e.preventDefault(); const v = tabs[i].dataset.v; tabs[i].click(); setTimeout(() => { const n = document.querySelector('#stepsnav .step[data-v="' + v + '"]'); if (n) n.focus(); }, 0);
         });
+        document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveRun(false); } });
         compute(); render();
         await initStore(); render();
       })();

@@ -812,17 +812,6 @@
       grid-template-columns: repeat(auto-fill, minmax(280px, 1fr))
     }
 
-    .thumb {
-      background: var(--bg);
-      border: 1px solid var(--line2);
-      border-radius: 11px;
-      padding: 14px;
-      display: flex;
-      gap: 16px;
-      align-items: center;
-      justify-content: space-between
-    }
-
     .bars>div {
       display: flex;
       align-items: center;

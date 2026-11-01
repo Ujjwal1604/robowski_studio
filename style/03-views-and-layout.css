@@ -326,8 +326,47 @@
       letter-spacing: .02em
     }
 
+    .reagent-grid {
+      min-width: 860px
+    }
+
+    .rfield {
+      display: block;
+      min-width: 0
+    }
+
+    .rfield > span {
+      display: none
+    }
+
     .rrow {
       margin-bottom: 10px
+    }
+
+    .recipe-disclosure {
+      min-width: 108px
+    }
+
+    .recipe-disclosure summary {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      white-space: nowrap
+    }
+
+    .recipe-cue {
+      color: var(--mut);
+      font-size: 11px
+    }
+
+    .recipe-content {
+      min-width: 220px;
+      max-width: min(340px, calc(100vw - 48px));
+      padding: 8px 0 2px;
+      color: var(--fg2);
+      line-height: 1.55;
+      white-space: normal
     }
 
     .code {
@@ -506,8 +545,75 @@
       line-height: 1.5
     }
 
+    .setup-advanced {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line2)
+    }
+
+    .setup-advanced > summary {
+      font-size: 13px;
+      font-weight: 600
+    }
+
+    .setup-advanced-grid {
+      padding-top: 14px
+    }
+
     .card h2 {
       font-size: 17px
+    }
+
+    @media(max-width:980px) {
+      .reagent-editor {
+        padding: 16px !important
+      }
+
+      .reagent-grid {
+        min-width: 0
+      }
+
+      .rw.th {
+        display: none
+      }
+
+      .rrow {
+        padding: 12px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--panel)
+      }
+
+      .rrow .rw {
+        grid-template-columns: 40px minmax(0, 1fr);
+        gap: 10px;
+        align-items: start
+      }
+
+      .rrow .rw .rfield {
+        display: flex;
+        flex-direction: column;
+        gap: 4px
+      }
+
+      .rrow .rw .rfield > span {
+        display: block;
+        color: var(--mut);
+        font-size: 11px;
+        line-height: 1.3
+      }
+
+      .rrow .rw .racts {
+        grid-column: 1 / -1
+      }
+
+      .rrow .hint {
+        margin: 4px 0 0
+      }
+
+      .rrow .rng {
+        margin-left: 0
+      }
     }
 
     @media(max-width:700px) {

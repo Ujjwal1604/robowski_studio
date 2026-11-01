@@ -55,7 +55,7 @@
     .topr {
       display: flex;
       align-items: center;
-      gap: 16px
+      gap: 24px
     }
 
     .rname {
@@ -63,13 +63,24 @@
       font-size: 13px;
       font-weight: 500;
       max-width: 240px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      line-height: 1.35;
+      padding: 4px 0;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap
     }
 
     .rname .hint {
-      font-weight: 400
+      font-weight: 400;
+      line-height: 1.35
+    }
+
+    .rname > div {
+      overflow: hidden;
+      text-overflow: ellipsis
     }
 
     .avatar {

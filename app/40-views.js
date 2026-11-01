@@ -1,4 +1,4 @@
-      // APP 40 - the screens. Each *View function returns an HTML string (template literal); render() puts it in the page.
+// APP 40 - the screens. Each *View function returns an HTML string (template literal); render() puts it in the page.
       // Edit here to: change the layout or wording of Setup / Combinations / Deck / Export / Runs, add a card, or add a column.
       // Buttons use data-act="name"; the matching code is in file 50 (click handler). Inputs use data-k="path" bound to the state S.
       // Colours and spacing live in style/*.css, not here.
@@ -275,7 +275,7 @@ function pageHead(t,s,r){return `<div class="phead"><div><div class="ptl">${t}</
 function runsView(){
  const libH=lib.map(x=>`<div><div style="flex:1;min-width:0"><b>${esc(x.name)}</b><div class="hint mono" style="margin:0">${nf(x.molarMass,3)} g/mol · ${x.density?x.density+' g/mL':'solid'}</div></div><button class="btn sm" data-act="dellib" data-id="${esc(x.id)}" aria-label="Delete ${esc(x.name)}">✕</button></div>`).join('');
  return `<div class="bodyw" style="padding-left:0;padding-right:0"><div class="lcol" style="gap:20px" id="runslist">${pageHead('Runs','Every run is saved with its deck, plates and tips (in '+storeMode+'). Open one to edit it, or duplicate it as a starting point.',`<div class="seg" role="group" aria-label="Filter runs">${['all','draft','exported'].map(f=>`<button data-act="rf" data-v="${f}" class="${runFilter===f?'on':''}">${f==='all'?'All':f==='draft'?'Drafts':'Exported'}</button>`).join('')}</div><div class="searchwrap"><svg class="searchicon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="7" cy="7" r="5"/><path d="M11 11l3 3"/></svg><input type="text" class="f" id="runsearch" placeholder="Search by reagent or name…" value="${esc(runSearch)}" style="width:220px;height:34px;padding-left:30px" aria-label="Search runs by reagent or name"></div><button class="btn" data-act="importrobot">Open robot .xlsx</button><button class="btn" data-act="import">Import generator .xlsx</button><button class="btn pri" data-act="new">New run</button>`)}
- ${runsListInner()}</div>
+ <div id="runsbody">${runsListInner()}</div></div>
  <div class="rcol">${backupCard()}<div class="card pad"><div class="ct">Reagent library</div><div class="psub" style="margin-bottom:8px">Saved once. Type a name on the Setup screen and it fills molar mass and density.</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"><button class="btn sm pri" data-act="importlib">Import CSV / Excel</button><button class="btn sm" data-act="libtpl">Template</button><button class="btn sm" data-act="libexp" ${lib.length ? '' : 'disabled'}>Export</button></div><div class="list">${libH||'<div class="empty-note">Empty.</div>'}</div>
  <h3>Add</h3><div class="row"><div class="fld" style="grid-column:span 2"><label class="lbl">Name</label><input type="text" class="f" id="ln"></div><div class="fld"><label class="lbl">g/mol</label><input type="number" class="f mono" step="any" id="lm"></div><div class="fld"><label class="lbl">g/mL (liquid)</label><input type="number" class="f mono" step="any" id="ld"></div></div><button class="btn sm" style="margin-top:10px" data-act="addlib">Add to library</button></div></div></div>`;
 }
@@ -288,16 +288,16 @@ function runCardHTML(r){const sel=compareIds.includes(r.id);return `<div class="
 function runsListInner(){
  const shown=runsList.filter(r=>{if(runFilter!=='all'&&(runFilter==='exported'?r.status!=='exported':r.status==='exported'))return false;if(runSearch){const q=runSearch.toLowerCase(),codes=(r.codes||[]).join(' ').toLowerCase(),names=((r.summary||[]).map(x=>x.text).join(' ')+(r.state?r.state.reagents.map(x=>x.name||'').join(' '):'')).toLowerCase();return r.name.toLowerCase().includes(q)||codes.includes(q)||names.includes(q)}return true});
  const bar=compareIds.length===2?`<div class="cmp-bar" style="display:flex;align-items:center;gap:12px;padding:10px 16px;margin-bottom:4px"><b>2 runs selected</b><button class="btn sm pri" data-act="cmpgo">Compare them</button><button class="btn sm" data-act="cmpclear">Clear</button></div>`:compareIds.length===1?`<div class="cmp-bar" style="display:flex;align-items:center;gap:12px;padding:10px 16px;margin-bottom:4px"><span class="hint">Select one more run to compare.</span><button class="btn sm" data-act="cmpclear">Cancel</button></div>`:'';
- return bar+(shown.length?`<div class="runs">${shown.map(runCardHTML).join('')}</div>`:`<div class="card empty-state"><div class="empty-icon"><svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="var(--mut)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"><rect x="8" y="6" width="32" height="36" rx="4"/><path d="M14 18h20M14 26h20M14 34h12"/></svg></div><div style="font-size:16px;font-weight:600;margin-bottom:4px">${runSearch?'No runs match your search':'No saved runs yet'}</div><div class="hint" style="margin:0 0 16px">${runSearch?'Try a different reagent name or code, or clear the search.':'Set up reagents and ranges, then save your run from the Export step to see it here.'}</div>${runSearch?'':`<button class="btn pri" data-act="new">Start a new run</button>`}</div>`);
+ return bar+(shown.length?`<div class="runs">${shown.map(runCardHTML).join('')}</div>`:`<div class="card empty-state"><div class="empty-icon"><svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="var(--mut)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"><rect x="8" y="6" width="32" height="36" rx="4"/><path d="M14 18h20M14 26h20M14 34h12"/></svg></div><div style="font-size:16px;font-weight:600;margin-bottom:4px">${runSearch?'No runs match your search':runsList.length?'No runs in this filter':'No saved runs yet'}</div><div class="hint" style="margin:0 0 16px">${runSearch?'Try a different reagent name or code, or clear the search.':'Set up reagents and ranges, then save your run from the Export step to see it here.'}</div>${runSearch?'':`<button class="btn pri" data-act="new">Start a new run</button>`}</div>`);
 }
-function paintRunsList(){const c=$('#runslist');if(c){let h=c.innerHTML;const pheadEnd=h.indexOf('</div>',h.indexOf('phead'));if(pheadEnd<0)return;const afterHead=h.slice(0,pheadEnd+6);c.innerHTML=afterHead+runsListInner();}}
+function paintRunsList(){const c=$('#runsbody');if(c)c.innerHTML=runsListInner();}
 
 
 
       function compareView() {
-        if (compareIds.length !== 2) { view = 'runs'; render(); return ''; }
+        if (compareIds.length !== 2) return '';
         const rA = runsList.find(x => x.id === compareIds[0]), rB = runsList.find(x => x.id === compareIds[1]);
-        if (!rA || !rB) { compareIds = []; view = 'runs'; render(); return ''; }
+        if (!rA || !rB) { compareIds = []; view = 'runs'; return ''; }
         const stA = rA.state, stB = rB.state;
         const paramRows = [
           ['Mode', stA.mode, stB.mode], ['Hood', stA.hood, stB.hood], ['Vial vol (µL)', stA.vialVolume, stB.vialVolume],
@@ -306,7 +306,7 @@ function paintRunsList(){const c=$('#runslist');if(c){let h=c.innerHTML;const ph
           ['Reactions', rA.reactions, rB.reactions], ['Plates', rA.plates, rB.plates],
         ];
         const fmt = v => v == null || v === '' ? '<span class="hint">—</span>' : esc(String(v));
-        const diff = (a, b) => String(a) === String(b) ? '' : ' style="color:var(--accent)"';
+        const diff = (a, b) => String(a) === String(b) ? '' : ' style="color:var(--acc);font-weight:600"';
         const reagsA = stA.reagents || [], reagsB = stB.reagents || [];
         const maxR = Math.max(reagsA.length, reagsB.length);
         const reagentRows = Array.from({ length: maxR }, (_, i) => {
@@ -326,7 +326,7 @@ function paintRunsList(){const c=$('#runslist');if(c){let h=c.innerHTML;const ph
         }).join('');
         return `<div class="wrap"><div class="card" style="margin-bottom:20px"><div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><h2>Compare runs</h2><p class="sub" style="margin:0">Differences are in <span style="color:var(--acc)">accent colour</span> · missing reagents shown in <span style="color:var(--bad);opacity:.6">red, faded</span>.</p></div><button class="btn sm" data-act="cmpclear">Back to runs</button></div>
         <div style="display:flex;gap:20px;margin-top:12px"><div style="flex:1"><b>${esc(rA.name)}</b><div class="hint">${esc(rA.mode)} · ${new Date(rA.updated||0).toLocaleDateString()}</div></div><div style="flex:1"><b>${esc(rB.name)}</b><div class="hint">${esc(rB.mode)} · ${new Date(rB.updated||0).toLocaleDateString()}</div></div></div></div>
-        <div class="card" style="margin-bottom:20px"><h2>Parameters</h2><div class="tbl"><table><thead><tr><th>Setting</th><th>${esc(rA.name)}</th><th>${esc(rB.name)}</th></tr></thead><tbody>${paramRows.map(([label, a, b]) => `<tr><td>${label}</td><td${diff(a, b)}>${fmt(a)}</td><td${diff(b, b)}>${fmt(b)}</td></tr>`).join('')}</tbody></table></div></div>
+        <div class="card" style="margin-bottom:20px"><h2>Parameters</h2><div class="tbl"><table><thead><tr><th>Setting</th><th>${esc(rA.name)}</th><th>${esc(rB.name)}</th></tr></thead><tbody>${paramRows.map(([label, a, b]) => `<tr><td>${label}</td><td${diff(a, b)}>${fmt(a)}</td><td${diff(a, b)}>${fmt(b)}</td></tr>`).join('')}</tbody></table></div></div>
         <div class="card"><h2>Reagents</h2><div class="tbl"><table><thead><tr><th>#</th><th>${esc(rA.name)} code</th><th>${esc(rB.name)} code</th><th>${esc(rA.name)} name</th><th>${esc(rB.name)} name</th><th>${esc(rA.name)} MM</th><th>${esc(rB.name)} MM</th><th>${esc(rA.name)} stock</th><th>${esc(rB.name)} stock</th></tr></thead><tbody>${reagentRows || '<tr><td colspan="9" class="empty-note">No reagents.</td></tr>'}</tbody></table></div></div></div>`;
       }
 
@@ -334,6 +334,7 @@ function paintRunsList(){const c=$('#runslist');if(c){let h=c.innerHTML;const ph
       // The step tabs. render(): redraws the whole page from the state (called after most actions).
       const TABS = [['setup', 'Setup'], ['combos', 'Combinations'], ['deck', 'Deck'], ['export', 'Export'], ['runs', 'Runs']];
       function render() {
+        if (view === 'compare' && compareIds.length !== 2) view = 'runs';
         visited[view] = 1;
         const top = `<div class="top"><div class="topin"><h1 style="margin:0;font:inherit;display:contents"><button class="logo" data-act="tab" data-v="setup" title="Back to the run"><svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="9" fill="#15211E"/><g fill="#7FD1C2"><circle cx="10" cy="10" r="2.6"/><circle cx="17" cy="10" r="2.6"/><circle cx="24" cy="10" r="2.6"/><circle cx="10" cy="17" r="2.6"/><circle cx="24" cy="17" r="2.6"/><circle cx="10" cy="24" r="2.6"/><circle cx="17" cy="24" r="2.6"/><circle cx="24" cy="24" r="2.6"/></g><circle cx="17" cy="17" r="3.4" fill="#FFC857"/></svg>Robowski Studio</button></h1>
  <div class="seg" role="group" aria-label="Active hood">${['left', 'right'].map(h => `<button data-act="hood" data-v="${h}" class="${S.hood === h ? 'on' : ''}"><span class="hdot" style="background:${S.hood === h ? '#1F9D6B' : '#AEB5AC'}"></span>${h === 'left' ? 'Left' : 'Right'} hood</button>`).join('')}</div>
@@ -347,4 +348,3 @@ function paintRunsList(){const c=$('#runslist');if(c){let h=c.innerHTML;const ph
         let lid = 0; document.querySelectorAll('#app .fld').forEach(f => { const l = f.querySelector('label.lbl:not([for])'), c = f.querySelector('input:not([type=hidden]),select,textarea'); if (l && c) { if (!c.id) c.id = 'f' + (++lid); l.htmlFor = c.id; } });
         if (view === 'setup') paintLive();
       }
-

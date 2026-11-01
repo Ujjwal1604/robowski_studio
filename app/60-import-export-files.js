@@ -78,14 +78,14 @@
             const st = exampleState();
             Object.assign(st, { name: d.name, mode: 'triplet', vialVolume: d.vialVolume, threshold: d.threshold, dilutionFactor: d.dilutionFactor, reactionSolvent: d.reactionSolvent, randomize: false, solventAfter: d.solventAfter, reagents: d.reagents.map(r => ({ ...r, min: '', step: '', max: '' })), tri });
             delete st.sets; if (d.deckPlates) st.deckPlates = d.deckPlates;
-            triSync(st); S = normalize(st); S.id = null; compute();
+            triSync(st); expandedRecipeVials.clear(); S = normalize(st); S.id = null; compute();
             let differ = 0, total = 0; if (run) d.srcIdx.forEach((ri, k) => { const row = run.rows[ri], fr = d.fileRows[k]; total++; if (!row) { differ++; return; } for (const key of d.volCols) { if (Math.abs((+row['vol#' + key] || 0) - (fr[key] || 0)) > 1e-4) { differ++; break; } } });
             view = 'setup'; render(); toast(differ ? `Opened ${f.name} as triplet plates; ${differ} of ${total} wells differ from the file.` : `Opened ${f.name} as triplet plates; all ${total} wells match the file.`); return;
           }
           const st = exampleState();
           Object.assign(st, { name: d.name, mode: 'concentration', vialVolume: d.vialVolume, threshold: d.threshold, dilutionFactor: d.dilutionFactor, reactionSolvent: d.reactionSolvent, randomize: false, solventAfter: d.solventAfter, reagents: d.reagents, imported: { name: d.name, rows: d.rows, skipped: d.skipped } });
           delete st.sets; if (d.deckPlates) st.deckPlates = d.deckPlates;
-          S = normalize(st); S.id = null; compute();
+          expandedRecipeVials.clear(); S = normalize(st); S.id = null; compute();
           let differ = 0;
           if (run) { run.rows.forEach((row, k) => { const fr = d.fileRows[k]; if (!fr) return; let bad = false; for (const key of d.volCols) { const a = +row['vol#' + key] || 0, b = fr[key] || 0; if (Math.abs(a - b) > 1e-4) { bad = true; break; } } if (bad) differ++; }); }
           const notes = [`Rebuilt ${d.rows.length} vials` + (d.skipped ? ` (${d.skipped} empty rows skipped)` : '') + `; vial volume ${nf(d.vialVolume, 1)} µL, dilution factor ${nf(d.dilutionFactor, 2)}, threshold set to ${nf(d.threshold, 1)} µL.`];

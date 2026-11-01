@@ -43,7 +43,7 @@
         if (rows.length > 60000) throw new Error('More than 60,000 vials. Narrow the sets.');
         return { rows, setOf: so };
       }
-      let triMeta = [], triBlank = new Set(), missing = [], invalid = new Set(), allEmpty = false, triPending = false, vialFocus = null, visited = { setup: 1 }, _bs = null, _bsRun = null, runSearch = '', compareIds = [], draftSavedAt = 0;
+      let triMeta = [], triBlank = new Set(), missing = [], invalid = new Set(), allEmpty = false, triPending = false, vialFocus = null, visited = { setup: 1 }, _bs = null, _bsRun = null, runSearch = '', compareIds = [], draftSavedAt = 0, expandedRecipeVials = new Set();
       // Friendly names for issue types.
       const ISSUE_NAMES = { 'negative-solvent': 'Negative solvent', 'subminimum': 'Below 0.5 µL', 'low-solvent': 'Solvent below threshold', 'large-transfer': 'Transfer over 1000 µL', 'n3-needed': 'Needs N³ dilution', 'underprepared-stock': 'Stock under-prepared', 'oversize-stock': 'Stock larger than a 20 mL bottle', 'deck-capacity': 'Deck full', 'requires-reload': 'More than 3 plates' };
       let fixesDone = false, whyNot = [], blank = false, runFilter = 'all', S = normalize(exampleState()), run = null, err = null, fixes = [], view = 'setup', lib = [], runsList = [], page = 0, filterBad = false, status = 'draft';

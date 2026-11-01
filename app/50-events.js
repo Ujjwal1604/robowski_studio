@@ -1,4 +1,4 @@
-      // APP 50 - events. One delegated click handler reads the button's data-act and runs the action (add a new button: put
+// APP 50 - events. One delegated click handler reads the button's data-act and runs the action (add a new button: put
       // data-act="myaction" in a view, then add  else if (a === 'myaction') {...}  in the click handler below).
       // Input/change handlers write values into the state through data-k paths (setPath), then compute() and render().
       // Edit here to: add actions, change what a button does, or the reagent-rename rules (renameReagent).
@@ -7,7 +7,9 @@
       // Writes a value into the state by path, e.g. "reagents.0.stock".
       function setPath(path, val) { const p = path.split('.'); let o = S; for (let i = 0; i < p.length - 1; i++)o = o[p[i]]; o[p[p.length - 1]] = val; }
       document.addEventListener('input', e => {
-        const t = e.target; if (!t.dataset || !t.dataset.k || t.type === 'checkbox') return;
+        const t = e.target;
+        if (t.id === 'runsearch') { runSearch = t.value; if (view === 'runs') paintRunsList(); return; }
+        if (!t.dataset || !t.dataset.k || t.type === 'checkbox') return;
         const k = t.dataset.k; let v = t.value;
         const textual = /(^randomize$|^name$|\.code$|\.name$|\.solvent$|reactionSolvent|^tri\.groups\.\d+\.members|^tri\.plates\.|\.smiles$|\.iupac$|^product\.|^flasksText$)/.test(k);
         if (!textual) { if (String(v).trim() === '') { if (k === 'randomSeed') return; v = k.endsWith('density') ? 0 : ''; } else { v = parseFloat(v); if (Number.isNaN(v)) return; } }
@@ -15,7 +17,6 @@
         setPath(k, v); if (k === 'tri.reps') triSync(); compute();
         if (k === 'randomize') { render(); return; }
         if (view === 'setup') { paintLive(); if (/^reagents\.\d+\.name$/.test(k)) { refreshLabels(); paintTri('triplates'); } else if (/^tri\.groups\./.test(k)) paintTri('triplates'); }
-        if (t.id === 'runsearch') { runSearch = t.value; if (view === 'runs') paintRunsList(); }
       });
       document.addEventListener('change', e => {
         const t = e.target;
@@ -147,4 +148,3 @@
         try { const d = await C.importGenerator(f); delete S.sets; Object.assign(S, exampleState(), { name: f.name.replace(/\.xlsx$/i, '') }, { mode: d.mode, vialVolume: d.vialVolume, threshold: d.threshold, dilutionFactor: d.dilutionFactor, reactionSolvent: d.reactionSolvent, reagents: d.reagents.map(r => ({ code: r.code, name: r.name, molarMass: r.molarMass, density: r.density, stock: r.stock, solvent: r.solvent, min: r.min, step: r.step, max: r.max, pipettingMode: 'empty' })) }); delete S.sets; normalize(S); S.id = null; compute(); view = 'setup'; render(); toast('Imported ' + f.name); }
         catch (e) { toast('Could not read that workbook: ' + e.message); }
       }
-

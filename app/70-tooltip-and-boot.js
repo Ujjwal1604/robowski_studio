@@ -13,7 +13,7 @@
       document.addEventListener('mouseout', e => { if (!e.relatedTarget || !e.relatedTarget.closest || !e.relatedTarget.closest('[data-row],[data-stock]')) { const t = $('#tip'); if (t) t.style.display = 'none'; } });
 
       /* ---------- boot ---------- */
-      function boot() {
+      (async function () {
         const th = ls.get('rs.theme'); if (th) document.documentElement.dataset.theme = th;
         try { const d = JSON.parse(ls.get('rs.draft2') || 'null'); if (d && d.reagents && d.reagents.length >= 2) S = normalize(d); } catch (e) { }
         document.addEventListener('keydown', e => { const rb = e.target && e.target.matches && e.target.matches('div[role="button"][data-act]'); if (rb && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); e.target.click(); } });
@@ -26,7 +26,6 @@
         });
         document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveRun(false); } });
         compute(); render();
-        initStore().then(() => render());
-      }
-      if (!window.__rsGateLocked) boot(); else window.__rsBoot = boot;
+        await initStore(); render();
+      })();
     })();

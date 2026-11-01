@@ -51,7 +51,7 @@
       document.addEventListener('click', async e => {
         const b = e.target.closest('[data-act]'); if (!b || b.tagName === 'SELECT' || b.tagName === 'INPUT') return;
         const a = b.dataset.act, v = b.dataset.v, i = +b.dataset.i, id = b.dataset.id;
-        if (a === 'tab') { view = v; page = 0; render(); window.scrollTo(0, 0); }
+        if (a === 'tab') { vialFocus = null; view = v; page = 0; render(); window.scrollTo(0, 0); }
         else if (a === 'theme') { const cur = document.documentElement.dataset.theme; const dark = cur ? cur === 'dark' : matchMedia('(prefers-color-scheme:dark)').matches; document.documentElement.dataset.theme = dark ? 'light' : 'dark'; ls.set('rs.theme', dark ? 'light' : 'dark'); }
         else if (a === 'mode') {
           if (v === 'triplet') {
@@ -93,7 +93,7 @@
         else if (a === 'sheet') { const m = document.getElementById('previewModal'); if (m) { m.querySelectorAll('.sheettab').forEach(t => { const on = t === b; t.setAttribute('aria-selected', on ? 'true' : 'false'); t.classList.toggle('on', on); }); m.querySelectorAll('.sheetpane').forEach(p => { p.hidden = p.dataset.pane !== b.dataset.v; }); } }
         else if (a === 'save') await saveRun(false);
         else if (a === 'saveas') await saveRun(true);
-        else if (a === 'new') { const u = snap(); status = 'draft'; S = normalize(exampleState()); S.name = 'new-run'; visited = { setup: 1 }; compute(); view = 'setup'; render(); toast('Started a new run.', u); }
+        else if (a === 'new') { const u = snap(); status = 'draft'; S = normalize(exampleState()); S.name = 'new-run'; visited = { setup: 1 }; compute(); view = 'setup'; render(); const rn = $('#runname'); if (rn) rn.focus(), rn.select(); toast('Started a new run.', u); }
         else if (a === 'open') { const r = runsList.find(x => x.id === id); if (r) { status = r.status || 'draft'; S = normalize(JSON.parse(JSON.stringify(r.state))); S.id = r.id; visited = { setup: 1 }; compute(); view = 'setup'; render(); } }
         else if (a === 'dup') { const r = runsList.find(x => x.id === id); if (r) { status = 'draft'; S = normalize(JSON.parse(JSON.stringify(r.state))); S.id = null; S.name = r.name + '-copy'; visited = { setup: 1 }; compute(); view = 'setup'; render(); toast('Duplicated. Save it to keep the copy.'); } }
         else if (a === 'nbcopy') { if (!run) return; const txt = C.notebookText(run); let ok = false; try { await navigator.clipboard.writeText(txt); ok = true; } catch (e) { } if (ok) toast('Copied. Paste into your notebook or slide notes.'); else { const ta = document.createElement('textarea'); ta.value = txt; ta.style.cssText = 'position:fixed;left:8px;right:8px;top:20%;height:50%;z-index:99;font:13px monospace'; document.body.appendChild(ta); ta.select(); toast('Select and copy the text, then click elsewhere to close it.'); ta.addEventListener('blur', () => ta.remove()); } }

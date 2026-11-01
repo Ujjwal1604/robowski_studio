@@ -57,12 +57,12 @@
           const rowsIx = [...new Set(list.map(x => x.row).filter(x => x != null))];
           h += `<div class="issue ${sev}"><span><b>${names[t] || t}</b> (${list.length}) · ${esc(list[0].message)}${list.length > 1 ? ` <i>+${list.length - 1} more</i>` : ''}</span>${rowsIx.length ? `<button class="btn sm" data-act="showvials" data-t="${esc(t)}">Show ${rowsIx.length} vial${rowsIx.length > 1 ? 's' : ''}</button>` : ''}</div>`;
         }
-        if (bad && fixes.length) h += `<div class="issue warn"><span><b>Verified fixes</b> (each one was recalculated and clears every blocking check)</span>${fixes.map((f, i) => `<button class="btn sm" data-act="fix" data-i="${i}">${esc(f.label)}</button>`).join('')}${fixes.some(f => f.kind === 'stock') ? '<span class="hint" style="flex-basis:100%">A stock change means preparing that stock at the new concentration. Check it still dissolves.</span>' : ''}</div>`;
-        else if (bad && run.reactions > 1500) h += `<div class="hint">This run has more than 1,500 vials, so fixes are not searched automatically.</div>`;
-        else if (bad && !fixesDone && run.reactions > FIX_AUTO_MAX) h += fixesBusy ? `<div class="hint">Searching for verified fixes… this can take a few seconds.</div>` : `<div class="issue warn"><span>This run has ${run.reactions} vials, so fixes are searched on request.</span><button class="btn sm" data-act="findfixes">Find verified fixes</button></div>`;
-        else if (bad && !fixesDone) h += `<div class="hint">Looking for a verified fix…</div>`;
-        else if (bad && fixesDone) h += `<div class="issue warn"><span><b>No single change fixes this</b></span></div>`;
-        if (bad && fixesDone && !fixes.length && whyNot.length) h += `<div class="issue warn"><span><b>Why</b>${whyNot.map(t => `<br>${esc(t)}`).join('')}</span></div>`;
+        if (bad && fixes.length) h += `<div class="issue warn" role="status" aria-live="polite"><span><b>Verified fixes</b> (each one was recalculated and clears every blocking check)</span>${fixes.map((f, i) => `<button class="btn sm" data-act="fix" data-i="${i}">${esc(f.label)}</button>`).join('')}${fixes.some(f => f.kind === 'stock') ? '<span class="hint" style="flex-basis:100%">A stock change means preparing that stock at the new concentration. Check it still dissolves.</span>' : ''}</div>`;
+        else if (bad && run.reactions > 1500) h += `<div class="hint" role="status" aria-live="polite">This run has more than 1,500 vials, so fixes are not searched automatically.</div>`;
+        else if (bad && !fixesDone && run.reactions > FIX_AUTO_MAX) h += fixesBusy ? `<div class="hint" role="status" aria-live="polite">Searching for verified fixes… this can take a few seconds.</div>` : `<div class="issue warn" role="status" aria-live="polite"><span>This run has ${run.reactions} vials, so fixes are searched on request.</span><button class="btn sm" data-act="findfixes">Find verified fixes</button></div>`;
+        else if (bad && !fixesDone) h += `<div class="hint" role="status" aria-live="polite">Looking for a verified fix…</div>`;
+        else if (bad && fixesDone) h += `<div class="issue warn" role="status" aria-live="polite"><span><b>No single change fixes this</b></span></div>`;
+        if (bad && fixesDone && !fixes.length && whyNot.length) h += `<div class="issue warn" role="status" aria-live="polite"><span><b>Why</b>${whyNot.map(t => `<br>${esc(t)}`).join('')}</span></div>`;
         return h;
       }
       function checkTable() {
@@ -92,7 +92,7 @@
  <div class="card pad"><div class="chead"><div class="ct">Run parameters</div>
   <div class="seg" role="group" aria-label="Generator mode"><button data-act="mode" data-v="concentration" class="${S.mode === 'concentration' ? 'on' : ''}">Concentration</button><button data-act="mode" data-v="equivalence" class="${S.mode === 'equivalence' ? 'on' : ''}">Equivalence</button><button data-act="mode" data-v="triplet" class="${S.mode === 'triplet' ? 'on' : ''}">Triplet plate</button></div></div>
  <div class="pgrid">
- <div class="fld" style="grid-column:span 2"><label class="lbl">Run name</label><input type="text" class="f" data-k="name" value="${esc(S.name)}"></div>
+ <div class="fld" style="grid-column:span 2"><label class="lbl">Run name</label><input type="text" class="f" id="runname" data-k="name" value="${esc(S.name)}"></div>
  <div class="fld"><label class="lbl">Total vol. per vial (µL)</label><div class="seg full" role="group" aria-label="Vial volume presets">${pre.map(p => `<button data-act="vv" data-v="${p}" class="${+S.vialVolume === p ? 'on' : ''}">${p}</button>`).join('')}<button data-act="vv" data-v="custom" class="${pre.includes(+S.vialVolume) ? '' : 'on'}">Custom</button></div>
   ${pre.includes(+S.vialVolume) ? '' : `<input type="number" class="f mono" data-k="vialVolume" value="${S.vialVolume}" aria-label="Vial volume" style="margin-top:6px">`}</div>
  <div class="fld"><label class="lbl">Pipetting threshold (µL)</label><input type="number" class="f mono" data-k="threshold" value="${S.threshold}"></div>
@@ -269,7 +269,7 @@
         if (Array.isArray(r.summary)) return r.summary;
         const key = r.id + ':' + r.updated; if (sumCache.has(key)) return sumCache.get(key);
         let lines = []; if ((r.reactions || 0) <= 300) { try { lines = C.notebookSummary(C.buildRun(dataFor(r.state))).reagents.map(x => ({ code: x.code, text: (x.name && x.name !== x.code ? x.name + ': ' : '') + x.use })); } catch (e) { lines = []; } }
-        sumCache.set(key, lines); return lines;
+        sumCache.set(key, lines); if (sumCache.size > 200) sumCache.delete(sumCache.keys().next().value); return lines;
       }
 function pageHead(t,s,r){return `<div class="phead"><div><div class="ptl">${t}</div><div class="psub">${s}</div></div>${r?`<div class="pr">${r}</div>`:''}</div>`;}
 function runsView(){

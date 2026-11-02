@@ -1,8 +1,11 @@
       // APP 70 - tooltips, keyboard shortcuts for tabs, and the start-up code (loads the draft, first render, then connects the store).
       // ------------------------------------------------------------
       /* tooltip for recipes */
+      const recipeTooltipTargets = '.v54[data-row],[data-stock]';
       document.addEventListener('mouseover', e => {
-        const el = e.target.closest('[data-row],[data-stock]'); const tip = $('#tip'); if (!tip) return;
+        const tip = $('#tip'); if (!tip) return;
+        if (e.target.closest('tr[data-row]')) { tip.style.display = 'none'; return; }
+        const el = e.target.closest(recipeTooltipTargets);
         if (!el || !run) { tip.style.display = 'none'; return; }
         let html = '';
         if (el.dataset.row != null) html = recipeText(run.rows[+el.dataset.row]);
@@ -10,7 +13,7 @@
         tip.innerHTML = html; tip.style.display = 'block';
         const r = el.getBoundingClientRect(); tip.style.left = Math.max(8, Math.min(innerWidth - 300, r.left)) + 'px'; tip.style.top = (r.bottom + 8 > innerHeight - 120 ? r.top - tip.offsetHeight - 8 : r.bottom + 8) + 'px';
       });
-      document.addEventListener('mouseout', e => { if (!e.relatedTarget || !e.relatedTarget.closest || !e.relatedTarget.closest('[data-row],[data-stock]')) { const t = $('#tip'); if (t) t.style.display = 'none'; } });
+      document.addEventListener('mouseout', e => { if (!e.relatedTarget || !e.relatedTarget.closest || !e.relatedTarget.closest(recipeTooltipTargets)) { const t = $('#tip'); if (t) t.style.display = 'none'; } });
 
       /* ---------- boot ---------- */
       (async function () {

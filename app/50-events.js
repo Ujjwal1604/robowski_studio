@@ -54,6 +54,15 @@
         const b = e.target.closest('[data-act]'); if (!b || b.tagName === 'SELECT' || b.tagName === 'INPUT') return;
         const a = b.dataset.act, v = b.dataset.v, i = +b.dataset.i, id = b.dataset.id;
         if (a === 'tab') { vialFocus = null; view = v; page = 0; render(); window.scrollTo(0, 0); }
+        else if (a === 'recipe') {
+          const vial = +v, open = !expandedRecipeVials.has(vial);
+          if (open) expandedRecipeVials.add(vial); else expandedRecipeVials.delete(vial);
+          const detail = document.querySelector(`[data-recipe-detail="${vial}"]`), cue = b.querySelector('.recipe-cue');
+          if (detail) detail.hidden = !open;
+          b.setAttribute('aria-expanded', String(open));
+          b.setAttribute('aria-label', `${open ? 'Hide' : 'View'} recipe for reaction ${vial + 1}, plate ${b.dataset.plate}, vial ${b.dataset.container}`);
+          if (cue) cue.textContent = open ? 'Hide recipe' : 'Recipe';
+        }
         else if (a === 'theme') { const cur = document.documentElement.dataset.theme; const dark = cur ? cur === 'dark' : matchMedia('(prefers-color-scheme:dark)').matches; document.documentElement.dataset.theme = dark ? 'light' : 'dark'; ls.set('rs.theme', dark ? 'light' : 'dark'); }
         else if (a === 'mode') {
           if (v === 'triplet') {
@@ -98,9 +107,9 @@
         else if (a === 'sheet') { const m = document.getElementById('previewModal'); if (m) { m.querySelectorAll('.sheettab').forEach(t => { const on = t === b; t.setAttribute('aria-selected', on ? 'true' : 'false'); t.classList.toggle('on', on); }); m.querySelectorAll('.sheetpane').forEach(p => { p.hidden = p.dataset.pane !== b.dataset.v; }); } }
         else if (a === 'save') await saveRun(false);
         else if (a === 'saveas') await saveRun(true);
-        else if (a === 'new') { const u = snap(); status = 'draft'; S = normalize(exampleState()); S.name = 'new-run'; visited = { setup: 1 }; compute(); view = 'setup'; render(); const rn = $('#runname'); if (rn) rn.focus(), rn.select(); toast('Started a new run.', u); }
-        else if (a === 'open') { const r = runsList.find(x => x.id === id); if (r) { status = r.status || 'draft'; S = normalize(JSON.parse(JSON.stringify(r.state))); S.id = r.id; visited = { setup: 1 }; compute(); view = 'setup'; render(); } }
-        else if (a === 'dup') { const r = runsList.find(x => x.id === id); if (r) { status = 'draft'; S = normalize(JSON.parse(JSON.stringify(r.state))); S.id = null; S.name = r.name + '-copy'; visited = { setup: 1 }; compute(); view = 'setup'; render(); toast('Duplicated. Save it to keep the copy.'); } }
+        else if (a === 'new') { const u = snap(); expandedRecipeVials.clear(); status = 'draft'; S = normalize(exampleState()); S.name = 'new-run'; visited = { setup: 1 }; compute(); view = 'setup'; render(); const rn = $('#runname'); if (rn) rn.focus(), rn.select(); toast('Started a new run.', u); }
+        else if (a === 'open') { const r = runsList.find(x => x.id === id); if (r) { expandedRecipeVials.clear(); status = r.status || 'draft'; S = normalize(JSON.parse(JSON.stringify(r.state))); S.id = r.id; visited = { setup: 1 }; compute(); view = 'setup'; render(); } }
+        else if (a === 'dup') { const r = runsList.find(x => x.id === id); if (r) { expandedRecipeVials.clear(); status = 'draft'; S = normalize(JSON.parse(JSON.stringify(r.state))); S.id = null; S.name = r.name + '-copy'; visited = { setup: 1 }; compute(); view = 'setup'; render(); toast('Duplicated. Save it to keep the copy.'); } }
         else if (a === 'nbcopy') { if (!run) return; const txt = C.notebookText(run); let ok = false; try { await navigator.clipboard.writeText(txt); ok = true; } catch (e) { } if (ok) toast('Copied. Paste into your notebook or slide notes.'); else { const ta = document.createElement('textarea'); ta.value = txt; ta.style.cssText = 'position:fixed;left:8px;right:8px;top:20%;height:50%;z-index:99;font:13px monospace'; document.body.appendChild(ta); ta.select(); toast('Select and copy the text, then click elsewhere to close it.'); ta.addEventListener('blur', () => ta.remove()); } }
         else if (a === 'nbpcopy') { if (!nbPending) return; const txt = C.notebookText(nbPending.rr, nbPending.dateStr); let ok = false; try { await navigator.clipboard.writeText(txt); ok = true; } catch (e) { } toast(ok ? 'Copied. Paste into your notebook or slide notes.' : 'Your browser blocked copying. Use Save image instead, or open the run and use Copy as text on the Export step.'); }
         else if (a === 'nbpsave') { if (!nbPending) return; try { if (await saveFile('notebook_card_' + safe(nbPending.name) + '.png', await C.notebookCardPngBytes(nbPending.rr, nbPending.dateStr))) closePreview(); } catch (e) { toast('Could not make the image: ' + (e && e.message || e)); } }
@@ -145,6 +154,6 @@
         /* a robot input workbook opened with the generator button: open it as a robot file instead */
         let isRobot = false; try { await C.importRobotWorkbook(f); isRobot = true; } catch (e) { }
         if (isRobot) return importRobot(f);
-        try { const d = await C.importGenerator(f); delete S.sets; Object.assign(S, exampleState(), { name: f.name.replace(/\.xlsx$/i, '') }, { mode: d.mode, vialVolume: d.vialVolume, threshold: d.threshold, dilutionFactor: d.dilutionFactor, reactionSolvent: d.reactionSolvent, reagents: d.reagents.map(r => ({ code: r.code, name: r.name, molarMass: r.molarMass, density: r.density, stock: r.stock, solvent: r.solvent, min: r.min, step: r.step, max: r.max, pipettingMode: 'empty' })) }); delete S.sets; normalize(S); S.id = null; compute(); view = 'setup'; render(); toast('Imported ' + f.name); }
+        try { const d = await C.importGenerator(f); expandedRecipeVials.clear(); delete S.sets; Object.assign(S, exampleState(), { name: f.name.replace(/\.xlsx$/i, '') }, { mode: d.mode, vialVolume: d.vialVolume, threshold: d.threshold, dilutionFactor: d.dilutionFactor, reactionSolvent: d.reactionSolvent, reagents: d.reagents.map(r => ({ code: r.code, name: r.name, molarMass: r.molarMass, density: r.density, stock: r.stock, solvent: r.solvent, min: r.min, step: r.step, max: r.max, pipettingMode: 'empty' })) }); delete S.sets; normalize(S); S.id = null; compute(); view = 'setup'; render(); toast('Imported ' + f.name); }
         catch (e) { toast('Could not read that workbook: ' + e.message); }
       }

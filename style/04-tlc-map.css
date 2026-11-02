@@ -115,3 +115,28 @@
     .tlcset {
       padding-top: 10px
     }
+
+    .tlcsets {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 12px
+    }
+
+    .tlcsetbtn {
+      padding: 6px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel);
+      color: inherit;
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer
+    }
+
+    .tlcsetbtn.on {
+      border-color: var(--acc);
+      color: var(--acc);
+      font-weight: 600
+    }

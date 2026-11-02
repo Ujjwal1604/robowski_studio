@@ -91,5 +91,16 @@
     need(csv.length === r.rows.length + 1 && csv[0][1] === 'tlc_lane' && csv[0].includes('A_mM'), 'csv shape ' + csv[0]);
     const lane1 = csv.find(x => x[1] === '1'); if (r.rows.length > 9) need(lane1 && lane1[3] === 'B1' && lane1[4] === '9', 'lane 1 should be B1 / vial 9: ' + lane1);
   });
+  await t('TLC lane config: parsing and lane transform', () => {
+    const csv = 'id,x0,y0,length,width,direction_angle,spot_radius_px,px_location_of_zero_rf\n0,100,500,300,72,0.0,24,50\n27,100,192,300,72,180.0,24,60\n';
+    const p = C.parseLaneConfig(csv); need(p.lanes.length === 2 && p.hasZeroRf && p.lanes[1].angle === 180, 'parse');
+    need(C.parseLaneConfig('id,x0,y0,length,width,direction_angle\n0,1,2,3,4,5\n').hasZeroRf === false, 'optional columns');
+    let threw = false; try { C.parseLaneConfig('id,x0\n0,1\n'); } catch (e) { threw = true; } need(threw, 'missing columns should throw');
+    const ap = (m, x, y) => [m[0] * x + m[2] * y + m[4], m[1] * x + m[3] * y + m[5]], up = C.laneMatrix(p.lanes[0], 1, 1), dn = C.laneMatrix(p.lanes[1], 1, 1);
+    let o = ap(up, 100, 500), f = ap(up, 100, 200); need(near(o[0], 36, 1e-6) && near(o[1], 300, 1e-6) && near(f[0], 36, 1e-6) && near(f[1], 0, 1e-6), 'upward lane ' + o + ' ' + f);
+    o = ap(dn, 100, 192); f = ap(dn, 100, 492); need(near(o[1], 300, 1e-6) && near(f[1], 0, 1e-6), 'downward lane ' + o + ' ' + f);
+    const half = C.laneMatrix(p.lanes[0], 0.5, 1), q = ap(half, 50, 250); need(near(q[0], 36, 1e-6) && near(q[1], 300, 1e-6), 'image scale ' + q);
+    need([0, 1, 5, 6, 26, 53].every(t => C.tlcLane(C.containerOfLane(t)) === t), 'lane <-> vial round trip');
+  });
   return out;
 })()

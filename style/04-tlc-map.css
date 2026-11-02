@@ -1,0 +1,117 @@
+
+    /* TLC map view (app/45-tlc-map.js): controls card, the 6 x 9 well grid, and each well cell. */
+    .tlcctl {
+      margin-bottom: 20px
+    }
+
+    .tlcbtns {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 12px
+    }
+
+    .tlcz {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 13px;
+      color: var(--fg2)
+    }
+
+    .tlcstat {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 12px
+    }
+
+    .tlcstat .chip input {
+      margin-right: 4px
+    }
+
+    .tlcwrap {
+      overflow-x: auto;
+      padding-bottom: 12px
+    }
+
+    .tlcgrid {
+      display: grid;
+      grid-template-columns: repeat(9, max-content);
+      gap: 10px;
+      justify-content: start
+    }
+
+    .tlccell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--panel);
+      color: inherit;
+      font: inherit;
+      cursor: pointer
+    }
+
+    .tlccell:hover {
+      border-color: var(--acc)
+    }
+
+    .tlccell:focus-visible {
+      outline: 2px solid var(--acc);
+      outline-offset: 2px
+    }
+
+    .tch {
+      display: flex;
+      justify-content: space-between;
+      align-self: stretch;
+      font-size: 12px
+    }
+
+    .tch span {
+      color: var(--mut)
+    }
+
+    .tcr {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2px 8px;
+      font-size: 11px;
+      max-width: 120px
+    }
+
+    .tcr span {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px
+    }
+
+    .tcr i {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block
+    }
+
+    .tcempty {
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+      color: var(--mut);
+      font-size: 12px
+    }
+
+    .tlcbig {
+      overflow: auto;
+      max-height: 70vh
+    }
+
+    .tlcset {
+      padding-top: 10px
+    }

@@ -80,5 +80,16 @@
     const r = C.buildRun(mk()), sh = await C.readTableFile(new File([C.workbookBytes(mk(), r)], 'x.xlsx'));
     need(sh.length === 5 && sh[2].name === 'stock_solution_concentration' && Math.max(...sh[2].rows.map(x => x.length)) >= 3, sh.map(x => x.name + ':' + Math.max(...x.rows.map(y => y.length))).join());
   });
+  await t('TLC lanes: column-by-column on the 6x9 plate, one lane per vial', () => {
+    need(C.tlcLane(0) === 0 && C.tlcLane(9) === 1 && C.tlcLane(1) === 6 && C.tlcLane(53) === 53, 'spot checks ' + [0, 9, 1, 53].map(i => C.tlcLane(i)));
+    need(new Set([...Array(54).keys()].map(i => C.tlcLane(i))).size === 54, 'not a one-to-one mapping');
+    need(C.tlcLane(5, 'row') === 5 && C.wellLabel(9) === 'B1' && C.wellLabel(53) === 'F9', 'row order / well labels');
+    const r = C.buildRun(mk()), rows = C.tlcLaneRows(r);
+    need(rows.every((x, i) => i === 0 || rows[i - 1].lane <= x.lane), 'lanes not sorted');
+    need(rows.length === r.rows.length, 'row count');
+    const csv = C.parseDelimited(C.tlcLaneCsv(r)).filter(x => x.length > 1);
+    need(csv.length === r.rows.length + 1 && csv[0][1] === 'tlc_lane' && csv[0].includes('A_mM'), 'csv shape ' + csv[0]);
+    const lane1 = csv.find(x => x[1] === '1'); if (r.rows.length > 9) need(lane1 && lane1[3] === 'B1' && lane1[4] === '9', 'lane 1 should be B1 / vial 9: ' + lane1);
+  });
   return out;
 })()

@@ -45,6 +45,29 @@
         for (const x of deckSteps(run)) rows.push(['☐', x.where, x.item, x.container, x.fill]);
         return csvText(rows);
       }
+      // ---- TLC lane map ------------------------------------------------------------------
+      // The vial plate is 6 rows (A-F) x 9 columns (1-9). The robot walks it row by row (A1, A2 ... A9, B1 ...), but the
+      // TLC plate is spotted column by column (A1, B1 ... F1, A2 ...). tlcLane() converts between the two.
+      // Lanes are numbered 0-53 per vial plate; lanes 0-26 are the first half of the TLC plate, 27-53 the second half.
+      // Change TLC_ORDER to 'row' to number lanes the way the robot does instead.
+      const TLC_ROWS = 6, TLC_COLS = 9, TLC_ORDER = 'column';
+      function tlcLane(container, order = TLC_ORDER) {
+        const r = Math.floor(container / TLC_COLS), c = container % TLC_COLS;
+        return order === 'row' ? container : c * TLC_ROWS + r;
+      }
+      function wellLabel(container) { return 'ABCDEF'[Math.floor(container / TLC_COLS)] + (container % TLC_COLS + 1); }
+      // One entry per vial, sorted by plate then lane: where the vial is and what is in it.
+      function tlcLaneRows(run, order = TLC_ORDER) {
+        return run.rows.map(r => ({ plate: r.plate_number, lane: tlcLane(r.container_id, order), half: tlcLane(r.container_id, order) < 27 ? 1 : 2, well: wellLabel(r.container_id), vial: r.container_id, reaction: r.global_index + 1, row: r }))
+          .sort((a, b) => a.plate - b.plate || a.lane - b.lane);
+      }
+      // tlc_lane_map.csv: one line per TLC lane with its well and the target concentration of every reagent.
+      function tlcLaneCsv(run, order = TLC_ORDER) {
+        const codes = run.rows[0] ? run.rows[0].recipe.map(x => x.code) : [];
+        const rows = [['plate', 'tlc_lane', 'tlc_half', 'well', 'robot_vial_index', 'reaction', ...codes.map(c => c + '_mM'), 'solvent_uL']];
+        for (const x of tlcLaneRows(run, order)) rows.push([x.plate, x.lane, x.half, x.well, x.vial, x.reaction, ...x.row.recipe.map(rc => benchNum(rc.target_concentration)), benchNum(x.row['vol#solvent'])]);
+        return csvText(rows);
+      }
       // The bench sheet as CSS + HTML body (also shown in the Export preview).
       function benchSheetParts(run, dateStr) {
         const n = notebookSummary(run, dateStr), st = stockSteps(run), dk = deckSteps(run), e = xmlEsc;

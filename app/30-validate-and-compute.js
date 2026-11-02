@@ -65,7 +65,7 @@
       }
       function recipeText(row, idx) {
         if (!row) return '';
-        const lines = [`<b>Reaction ${row.global_index + 1}</b> · plate ${row.plate_number} · vial ${row.container_id}`];
+        const lines = [`<b>Reaction ${row.global_index + 1}</b> · plate ${row.plate_number} · vial ${row.container_id} · TLC lane ${C.tlcLane(row.container_id)}`];
         row.recipe.forEach(rc => { if (rc.target_concentration > 0) lines.push(`${esc(rc.code)} ${nf(rc.target_concentration, 3)} mM &larr; ${nf(rc.transfer_volume, 1)} µL of ${esc(rc.stock_key)}${rc.dilution_level ? ` (${S.dilutionFactor ** rc.dilution_level}×)` : ''}`); });
         lines.push(`solvent ${nf(row['vol#solvent'], 1)} µL` + (row['vol#solvent'] < 0 ? ' &#9888; negative' : ''));
         return lines.join('<br>');

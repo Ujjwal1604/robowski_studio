@@ -161,6 +161,7 @@
           else if (kind === 'nb') ok = await saveFile('notebook_card_' + safe(S.name) + '.png', await C.notebookCardPngBytes(run, C.localDate()));
           else if (kind === 'stock') ok = await saveFile('stock_preparation.csv', C.stockCsv(run));
           else if (kind === 'load') ok = await saveFile('deck_load_checklist.csv', C.loadCsv(run));
+          else if (kind === 'tlc') ok = await saveFile('tlc_lane_map.csv', C.tlcLaneCsv(run));
           else if (kind === 'png') ok = await saveFile('run_card.png', await C.runCardPngBytes(run));
           else if (kind === 'zip') { let png = null; try { png = await C.runCardPngBytes(run); } catch (e) { } ok = await saveFile('robowski_package.zip', C.packageBytes(run, png)); }
           if (ok) { status = 'exported'; if (S.id) { const r = runsList.find(x => x.id === S.id); if (r) { r.exports = r.exports || []; r.exports.push({ t: Date.now(), kind }); if (r.exports.length > 50) r.exports = r.exports.slice(-50); r.status = 'exported'; r.updated = Date.now(); try { await putRun(r); } catch (e) { } } } }
@@ -182,11 +183,11 @@
       async function openPreview(kind) {
         if (!run || run.blockingIssues > 0) return;
         if (kind === 'nb') { openNotebookPreview(run, C.localDate(), S.name); return; }
-        const meta = { bench: ['bench_sheet.html', 'Bench sheet', 'HTML · prints on 1-2 pages'], xlsx: ['robowski_run.xlsx', 'Excel workbook', 'Binary · 5 sheets'], stock: ['stock_preparation.csv', 'Stock preparation', 'CSV · comma-separated'], load: ['deck_load_checklist.csv', 'Deck load checklist', 'CSV · comma-separated'], png: ['run_card.png', 'Run card image', 'PNG · 1200 × 900'], zip: ['robowski_package.zip', 'Complete package', 'ZIP · all files bundled'] }[kind];
+        const meta = { bench: ['bench_sheet.html', 'Bench sheet', 'HTML · prints on 1-2 pages'], xlsx: ['robowski_run.xlsx', 'Excel workbook', 'Binary · 5 sheets'], stock: ['stock_preparation.csv', 'Stock preparation', 'CSV · comma-separated'], load: ['deck_load_checklist.csv', 'Deck load checklist', 'CSV · comma-separated'], tlc: ['tlc_lane_map.csv', 'TLC lane map', 'CSV · comma-separated'], png: ['run_card.png', 'Run card image', 'PNG · 1200 × 900'], zip: ['robowski_package.zip', 'Complete package', 'ZIP · all files bundled'] }[kind];
         let body = '', foot = '';
         try {
-          if (kind === 'stock' || kind === 'load') {
-            const text = kind === 'stock' ? C.stockCsv(run) : C.loadCsv(run);
+          if (kind === 'stock' || kind === 'load' || kind === 'tlc') {
+            const text = kind === 'stock' ? C.stockCsv(run) : kind === 'tlc' ? C.tlcLaneCsv(run) : C.loadCsv(run);
             const rows = C.parseDelimited(text).filter(r => r.some(c => c !== ''));
             const head = rows[0] || [];
             const previewRows = rows.slice(0, 200);
@@ -221,7 +222,7 @@
           } else if (kind === 'zip') {
             const wb = C.workbookBytes(data(), run);
             let pngSize = 0; try { pngSize = (await C.runCardPngBytes(run)).length; } catch (e) { }
-            const items = [['robowski_run.xlsx', wb.length], ['stock_preparation.csv', C.stockCsv(run).length], ['deck_load_checklist.csv', C.loadCsv(run).length], ['run_card.svg', C.runCardSvg(run).length], ['run_card.png', pngSize], ['manifest.json', JSON.stringify(C.runManifest(run)).length]];
+            const items = [['robowski_run.xlsx', wb.length], ['stock_preparation.csv', C.stockCsv(run).length], ['deck_load_checklist.csv', C.loadCsv(run).length], ['tlc_lane_map.csv', C.tlcLaneCsv(run).length], ['run_card.svg', C.runCardSvg(run).length], ['run_card.png', pngSize], ['manifest.json', JSON.stringify(C.runManifest(run)).length]];
             body = `<div class="preview-meta"><span><b>${meta[1]}</b></span><span>${meta[2]}</span><span><b>${items.length}</b> files</span></div>
  <div class="list">${items.map(it => `<div><b class="mono" style="min-width:220px">${esc(it[0])}</b><span class="mono" style="color:var(--fg2)">${(it[1] / 1024).toFixed(1)} KB</span></div>`).join('')}</div>
  <div class="hint" style="margin-top:12px">The workbook, both CSVs, the plate-layout card (SVG and PNG) and a manifest with the seed and assumptions, in one zip.</div>`;

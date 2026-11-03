@@ -1,4 +1,4 @@
-// APP 45 - TLC map: upload a lane CSV and the aligned plate images, get a 6 x 9 map of the vial plate where every well
+      // APP 45 - TLC map: upload a lane CSV and the aligned plate images, get a 6 x 9 map of the vial plate where every well
       // shows its own TLC lane (cut out of the aligned image) next to its recipe. You can load several TLC sets (for example
       // the same plate run in different solvent systems), switch between them, or compare them side by side for every well.
       // TLC data belongs to the open run: the lane CSV text and the settings are saved inside the run (S.tlc), the images are

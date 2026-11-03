@@ -102,5 +102,18 @@
     const half = C.laneMatrix(p.lanes[0], 0.5, 1), q = ap(half, 50, 250); need(near(q[0], 36, 1e-6) && near(q[1], 300, 1e-6), 'image scale ' + q);
     need([0, 1, 5, 6, 26, 53].every(t => C.tlcLane(C.containerOfLane(t)) === t), 'lane <-> vial round trip');
   });
+  await t('spot finding: Rf from a lane profile', () => {
+    const g = (x, c, h, w) => h * Math.exp(-((x - c) ** 2) / (2 * w * w)), N = 1073;
+    const dark = Array.from({ length: N }, (_, i) => 200 - g(i, 140, 150, 14) - g(i, 500, 80, 12) - g(i, 800, 40, 12) + (Math.sin(i) * 0.5));
+    const s1 = C.findSpots(dark, { sign: -1, origin: 140, front: 1000, radius: 24 });
+    need(s1.length === 2 && Math.abs(s1[0].rf - 360 / 860) < 0.01 && Math.abs(s1[1].rf - 660 / 860) < 0.01, 'dark spots ' + JSON.stringify(s1));
+    need(s1[0].strength > s1[1].strength && s1[0].strength < 1, 'strengths ' + s1.map(x => x.strength));
+    const bright = Array.from({ length: N }, (_, i) => 20 + g(i, 140, 100, 14) + g(i, 300, 60, 10) + g(i, 1000, 150, 8));
+    const s2 = C.findSpots(bright, { sign: 1, origin: 140, front: 1000, radius: 24 });
+    need(s2.length === 1 && Math.abs(s2[0].rf - 160 / 860) < 0.01, 'bright spots ' + JSON.stringify(s2));
+    need(Math.abs(C.detectFront(bright) - 1000) <= 2, 'front ' + C.detectFront(bright));
+    const edge = Array.from({ length: N }, (_, i) => 200 - g(i, 140, 150, 14) - g(i, 975, 90, 10)); need(C.findSpots(edge, { sign: -1, origin: 140, front: 1000, radius: 24 }).length === 0, 'band at the front is not a spot');
+    need(C.findSpots(Array(N).fill(100), { sign: -1, origin: 140, front: 1000 }).length === 0, 'flat profile should have no spots');
+  });
   return out;
 })()

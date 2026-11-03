@@ -140,3 +140,14 @@
       color: var(--acc);
       font-weight: 600
     }
+
+    .tcrf {
+      font-size: 11px;
+      color: var(--fg2);
+      text-align: center;
+      min-height: 14px
+    }
+
+    .tlcrfs {
+      margin-top: 10px
+    }

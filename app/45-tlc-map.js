@@ -10,7 +10,7 @@
       const tlcNewSet = n => ({ uid: uid(), name: 'Set ' + n, cfgText: '', cfg: null, cfgName: '', frameW: C.LANE_FRAME_WIDTH, imgs: {}, frontPx: null, prof: {}, frontAuto: null });
       const tlcReset = set => { set.prof = {}; set.frontAuto = null; };   // forget cached brightness profiles and spots (after new files or settings)
       // sets: one entry per TLC run (own lane CSV + images). cur: the set shown. compare: show every set side by side, one panel type (cmpKey).
-      let tlc = { _key: '', _tok: 0, sets: [tlcNewSet(1)], cur: 0, compare: false, cmpKey: 'UV254', zoom: 0.45, plate: 0, rf: true, show: { UV254: true, White: true, UV366: true } };
+      let tlc = { _key: '', _tok: 0, sets: [tlcNewSet(1)], cur: 0, compare: false, cmpKey: 'UV254', zoom: 0.45, plate: 0, rf: true, filt: { b: 100, c: 100, inv: false }, show: { UV254: true, White: true, UV366: true } };
       const tlcCur = () => tlc.sets[tlc.cur];
       const tlcLetter = i => String.fromCharCode(65 + i);
 
@@ -107,8 +107,9 @@
         return set.frontAuto[h];
       }
       const tlcPrimary = set => ['UV254', 'UV366', 'White'].find(k => set.imgs[k]);
-      function tlcSpots(set, key, lane) {
-        if (!tlc.rf || lane.zeroRf == null || !set.imgs[key]) return null;
+      function tlcSpots(set, key, lane) { return tlc.rf ? tlcSpotsRaw(set, key, lane) : null; }
+      function tlcSpotsRaw(set, key, lane) {
+        if (lane.zeroRf == null || !set.imgs[key]) return null;
         const ck = 'sp:' + key + ':' + lane.id; if (set.prof[ck]) return set.prof[ck];
         return set.prof[ck] = C.findSpots(tlcProfile(set, key, lane), { sign: TLC_SIGNAL[key].sign, origin: lane.zeroRf, front: tlcFront(set, lane), radius: lane.spotRadius || 24 });
       }
@@ -127,11 +128,11 @@
       }
       // Draw lane panels upright (starting line at the bottom), side by side. k = screen px per frame px.
       function tlcDraw(canvas, panels, k) {
-        if (!panels.length) return;
+        if (!panels.length) return null;
         const dpr = Math.min(window.devicePixelRatio || 1, 2), gap = Math.max(3, Math.round(k * 6)), ph = Math.round(Math.max(...panels.map(p => k * p.lane.length)));
         const ws = panels.map(p => Math.round(k * p.lane.width)), cssW = ws.reduce((a, b) => a + b, 0) + gap * (panels.length - 1);
         canvas.width = cssW * dpr; canvas.height = ph * dpr; canvas.style.width = cssW + 'px'; canvas.style.height = ph + 'px';
-        const ctx = canvas.getContext('2d'); ctx.imageSmoothingQuality = 'high'; let x = 0;
+        const ctx = canvas.getContext('2d'); ctx.imageSmoothingQuality = 'high'; let x = 0; const lay = { dpr, w: cssW, h: ph, k, panels: [] };
         panels.forEach((p, j) => {
           const im = p.s.imgs[p.key], l = p.lane, m = C.laneMatrix(l, im.bmp.width / p.s.frameW, k), top = ph - k * l.length, w = ws[j];
           ctx.save(); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.beginPath(); ctx.rect(x, top, w, k * l.length); ctx.clip();
@@ -143,9 +144,18 @@
           }
           if (p.spots) { ctx.strokeStyle = '#FF4D8D'; ctx.lineWidth = 1.5; ctx.beginPath(); for (const sp of p.spots.slice(0, 6)) { const y = top + k * (l.length - sp.pos); ctx.moveTo(x + w - 7, y); ctx.lineTo(x + w, y); } ctx.stroke(); }   // pink ticks at the spots found
           if (p.label) { ctx.font = '600 11px sans-serif'; ctx.fillStyle = 'rgba(0,0,0,.65)'; ctx.fillRect(x, 0, 14, 15); ctx.fillStyle = '#fff'; ctx.fillText(p.label, x + 3, 12); }
-          ctx.restore(); x += w + gap;
+          ctx.restore(); lay.panels.push({ x, w, top, k }); x += w + gap;
         });
+        return lay;
       }
+      // ---- image filters (look only: brightness, contrast, negative). Rf is always measured on the untouched image. ----
+      const tlcFiltCss = () => { const f = tlc.filt; return f.b === 100 && f.c === 100 && !f.inv ? 'none' : `brightness(${f.b / 100}) contrast(${f.c / 100})${f.inv ? ' invert(1)' : ''}`; };
+      function tlcApplyFilter() {
+        const css = tlcFiltCss(); document.querySelectorAll('canvas[data-i], #tlcbig').forEach(c => { c.style.filter = css; });
+        document.querySelectorAll('[data-fv=b]').forEach(e => { e.textContent = tlc.filt.b + '%'; }); document.querySelectorAll('[data-fv=c]').forEach(e => { e.textContent = tlc.filt.c + '%'; });
+        document.querySelectorAll('[data-tlc=fb]').forEach(e => { e.value = tlc.filt.b; }); document.querySelectorAll('[data-tlc=fc]').forEach(e => { e.value = tlc.filt.c; }); document.querySelectorAll('[data-tlc=finv]').forEach(e => { e.checked = tlc.filt.inv; });
+      }
+      const tlcFilterBar = () => `<div class="tlcfilt"><b>Image filters:</b><label>Brightness: <input type="range" min="25" max="300" step="5" value="${tlc.filt.b}" data-tlc="fb"> <span class="mono" data-fv="b">${tlc.filt.b}%</span></label><label>Contrast: <input type="range" min="25" max="300" step="5" value="${tlc.filt.c}" data-tlc="fc"> <span class="mono" data-fv="c">${tlc.filt.c}%</span></label><label><input type="checkbox" data-tlc="finv" ${tlc.filt.inv ? 'checked' : ''}> Invert (negative)</label><button class="btn sm" data-tact="freset">Reset</button></div>`;
       const tlcRow = i => run && run.rows.find(r => r.plate_number === tlc.plate && r.container_id === i);
       const tlcRecipe = row => row ? row.recipe.filter(rc => rc.target_concentration > 0).map(rc => { const ci = S.reagents.findIndex(r => r.code === rc.code); return `<span title="${esc(rc.code)}"><i style="background:${rcol(ci < 0 ? 0 : ci)}"></i>${nf(rc.target_concentration, 3)}</span>`; }).join('') : '<span class="mut">no vial</span>';
       // One well of the map: well name, lane number, the lane picture, and the target concentrations (mM) of that vial.
@@ -168,6 +178,7 @@
  ${plates > 1 ? `<label class="tlcz">Plate <select class="f" data-tlc="plate">${[...Array(plates).keys()].map(x => `<option value="${x}" ${x === tlc.plate ? 'selected' : ''}>${x}</option>`).join('')}</select></label>` : ''}</div>
  <div class="tlcstat">${p ? `<span class="chip ok">${p.lanes.length} lanes · ${esc(s.cfgName)}${p.hasZeroRf ? ' · microadjusted' : ''}</span>` : '<span class="chip warn">No lane CSV yet</span>'}${p && !p.hasZeroRf ? '<span class="chip warn" title="Rf needs the spot origin, which is the px_location_of_zero_rf column of the microadjusted lane CSV">Rf needs the microadjusted lane CSV</span>' : ''}${imgChips || '<span class="chip warn">No images yet</span>'}${s.missing && s.missing.length ? `<span class="chip warn" title="${esc(s.missing.join(', '))}">Images saved with this run are not in this browser. Add them again.</span>` : ''}</div>
  ${multi ? `<div class="tlcbtns" style="margin-top:12px"><label class="tlcz"><input type="checkbox" data-tlc="compare" ${tlc.compare ? 'checked' : ''}> Compare sets side by side</label>${tlc.compare ? `<label class="tlcz">Image <select class="f" data-tlc="cmpkey" style="min-width:130px">${TLC_KEYS.map(k => `<option value="${k}" ${k === tlc.cmpKey ? 'selected' : ''}>${TLC_LABEL[k]}</option>`).join('')}</select></label><span class="hint" style="margin:0">${tlc.sets.map((x, i) => `<b>${tlcLetter(i)}</b> ${esc(x.name)}`).join(' · ')}</span>` : ''}</div>` : ''}
+${tlcFilterBar()}
  <details class="det" style="margin-top:10px"><summary>Image settings (this set)</summary><div class="tlcset"><label class="lbl">Frame width the lane coordinates refer to (px)</label><input type="number" class="f mono" data-tlc="frameW" value="${s.frameW}" style="max-width:140px"><div class="hint" style="margin-top:4px">3280 for the aligned images from the lane tool. Smaller copies of the same images work automatically.</div>
  <label class="lbl" style="margin-top:12px">Solvent front (px from the start of the lane)</label><input type="number" class="f mono" data-tlc="front" value="${s.frontPx || ''}" placeholder="auto" style="max-width:140px"><div class="hint" style="margin-top:4px">Leave empty to find it from the bright band in the UV 365 nm image${s.cfg && s.imgs.UV366 && !s.frontPx ? ` (found at ${tlcFront(s, s.cfg.lanes[0])} px for the first half, ${tlcFront(s, s.cfg.lanes.find(l => l.id >= 27) || s.cfg.lanes[0])} px for the second)` : ''}. Rf = (spot − origin) / (front − origin).</div></div></details>
  ${s.cfg && tlcPrimary(s) && s.cfg.hasZeroRf ? '<div class="tlcbtns" style="margin-top:12px"><button class="btn" data-tact="rfcsv">Download Rf table (CSV)</button><span class="hint" style="margin:0">All sets, every lane: Rf values and strengths next to the recipe.</span></div>' : ''}
@@ -177,18 +188,64 @@
       function tlcPaint() {
         const grid = document.getElementById('tlcgrid'); if (!grid) return;
         grid.querySelectorAll('canvas[data-i]').forEach(cv => tlcDraw(cv, tlcPanels(C.tlcLane(+cv.dataset.i, 'column')), tlc.zoom));
+        tlcApplyFilter();
       }
       // Larger view of one well: all panels at full size, the recipe, and the lane numbers.
+      // Hovering over a lane in the large view: read the Rf under the pointer. The pointer snaps to the nearest detected spot
+      // (within 16 px); if none is there it snaps to the darkest / brightest point of the profile within 10 px, so faint spots
+      // still get a position. The same height is marked on every panel so the images can be read against each other. Click pins it.
+      function tlcHover(overlay, panels, lay) {
+        const ov = overlay.querySelector('#tlcov'), box = overlay.querySelector('.tlcbig'), read = overlay.querySelector('#tlcread'), dpr = lay.dpr, pins = [];
+        ov.width = lay.w * dpr; ov.height = lay.h * dpr; ov.style.width = lay.w + 'px'; ov.style.height = lay.h + 'px';
+        const ctx = ov.getContext('2d'), name = p => tlc.compare && tlc.sets.length > 1 ? tlcLetter(p.i) + ' ' + p.s.name : TLC_LABEL[p.key];
+        const rfOf = (p, pos) => p.lane.zeroRf == null ? null : (pos - p.lane.zeroRf) / (tlcFront(p.s, p.lane) - p.lane.zeroRf);
+        const yOf = (j, pos) => lay.panels[j].top + lay.panels[j].k * (panels[j].lane.length - pos);
+        function pick(cx, cy) {
+          const j = lay.panels.findIndex(q => cx >= q.x && cx <= q.x + q.w); if (j < 0) return null;
+          const q = lay.panels[j], p = panels[j], L = p.lane.length, pos0 = (q.top + q.k * L - cy) / q.k; if (pos0 < 0 || pos0 > L) return null;
+          const sp = tlcSpotsRaw(p.s, p.key, p.lane) || [], near = sp.filter(x => Math.abs(x.pos - pos0) <= 16).sort((a, b) => Math.abs(a.pos - pos0) - Math.abs(b.pos - pos0))[0];
+          if (near) return { j, pos: near.pos, spot: near };
+          const prof = tlcProfile(p.s, p.key, p.lane), sg = TLC_SIGNAL[p.key].sign; let best = Math.round(pos0);
+          for (let d = -10; d <= 10; d++) { const x = Math.round(pos0) + d; if (x >= 0 && x < prof.length && sg * prof[x] > sg * prof[Math.max(0, Math.min(prof.length - 1, best))]) best = x; }
+          return { j, pos: Math.max(0, Math.min(prof.length - 1, best)), spot: null };
+        }
+        function mark(h, pin) {
+          const col = pin ? '#7CFC9A' : '#FF4D8D';
+          panels.forEach((p, j) => {
+            const q = lay.panels[j], y = yOf(j, h.pos), main = !pin && j === h.j;
+            ctx.save(); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.strokeStyle = col; ctx.lineWidth = main || pin ? 1.5 : 1; if (!main && !pin) ctx.setLineDash([4, 3]);
+            ctx.beginPath(); ctx.moveTo(q.x, y); ctx.lineTo(q.x + q.w, y); ctx.stroke(); ctx.setLineDash([]);
+            const rf = rfOf(p, h.pos), txt = rf == null ? Math.round(h.pos) + ' px' : 'Rf ' + rf.toFixed(2);
+            if (main || pin) { ctx.font = '600 11px sans-serif'; const tw = ctx.measureText(txt).width + 8, lx = q.x + q.w - tw, ly = Math.max(13, y - 3); ctx.fillStyle = 'rgba(0,0,0,.75)'; ctx.fillRect(lx, ly - 12, tw, 14); ctx.fillStyle = col; ctx.fillText(txt, lx + 4, ly - 1); }
+            ctx.restore();
+          });
+        }
+        function paint(h) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, ov.width, ov.height); pins.forEach(x => mark(x, true)); if (h) mark(h, false); }
+        const pinText = () => pins.length ? ' · pinned: ' + pins.map(x => { const r = rfOf(panels[x.j], x.pos); return r == null ? Math.round(x.pos) + ' px' : r.toFixed(2); }).join(', ') : '';
+        function say(h) {
+          if (!read) return; if (!h) { read.innerHTML = read.dataset.idle + pinText(); return; }
+          const p = panels[h.j], rf = rfOf(p, h.pos), w = x => x > 0.5 ? 'strong' : x > 0.2 ? 'medium' : 'weak';
+          read.innerHTML = `<b>${esc(name(p))}</b> · ${rf == null ? Math.round(h.pos) + ' px from the start line (no spot origin for Rf)' : `Rf <b>${rf.toFixed(2)}</b>`} · ${h.spot ? `detected spot (${w(h.spot.strength)})` : 'no detected spot here, snapped to the strongest point nearby'}${pinText()}`;
+        }
+        if (read) read.dataset.idle = read.textContent;
+        const at = e => { const r = ov.getBoundingClientRect(); return pick((e.clientX - r.left) * lay.w / r.width, (e.clientY - r.top) * lay.h / r.height); };
+        ov.addEventListener('pointermove', e => { const h = at(e); paint(h); say(h); });
+        ov.addEventListener('pointerleave', () => { paint(null); say(null); });
+        ov.addEventListener('click', e => {
+          const h = at(e); if (!h) return; const i = pins.findIndex(x => x.j === h.j && Math.abs(x.pos - h.pos) < 4);
+          if (i >= 0) pins.splice(i, 1); else pins.push(h); paint(h); say(h);
+        });
+      }
       function tlcOpen(i) {
         const t = C.tlcLane(i, 'column'), row = tlcRow(i), panels = tlcPanels(t); closePreview();
         const overlay = document.createElement('div'); overlay.id = 'previewModal'; overlay.className = 'modal-overlay';
         const lines = row ? row.recipe.filter(rc => rc.target_concentration > 0).map(rc => `${esc(rc.code)} ${nf(rc.target_concentration, 3)} mM`).concat([`solvent ${nf(row['vol#solvent'], 1)} µL`]).join(' · ') : 'No vial in this well for the current run.';
         const cap = tlc.compare && tlc.sets.length > 1 ? `${TLC_LABEL[tlc.cmpKey]} · ${tlc.sets.map((x, j) => `<b>${tlcLetter(j)}</b> ${esc(x.name)}`).join(' · ')}` : (panels.map(p => TLC_LABEL[p.key]).join(' · ') + (panels.length ? ' · ' + esc(tlcCur().name) : ''));
         const word = x => x > 0.5 ? 'strong' : x > 0.2 ? 'medium' : 'weak', rfs = panels.filter(p => p.spots).map(p => `<div><b>${tlc.compare && tlc.sets.length > 1 ? tlcLetter(p.i) + ' ' + esc(p.s.name) : TLC_LABEL[p.key]}</b>: ${p.spots.length ? p.spots.map(x => `Rf ${x.rf.toFixed(2)} (${word(x.strength)})`).join(', ') : 'no spots found'}</div>`).join('');
-        overlay.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="pvTitle"><div class="modal-head"><div class="mt" id="pvTitle">Well <b>${C.wellLabel(i)}</b> · TLC lane ${t}</div><button class="ib" data-act="closepreview" aria-label="Close" title="Close">✕</button></div><div class="modal-body"><p class="hint" style="margin:0 0 10px">${lines}${row ? ` · reaction ${row.global_index + 1}, vial ${i}` : ''}</p>${panels.length ? `<div class="tlcbig"><canvas id="tlcbig"></canvas></div><div class="hint" style="margin-top:8px">${cap}${panels.some(p => p.lane.zeroRf != null) ? ' · yellow ticks mark the spot origin, pink ticks the spots found' : ''}</div>${rfs ? `<div class="hint tlcrfs">${rfs}</div>` : ''}` : '<p>No lane picture for this well yet. Load a lane CSV and images first.</p>'}</div></div>`;
+        overlay.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="pvTitle"><div class="modal-head"><div class="mt" id="pvTitle">Well <b>${C.wellLabel(i)}</b> · TLC lane ${t}</div><button class="ib" data-act="closepreview" aria-label="Close" title="Close">✕</button></div><div class="modal-body"><p class="hint" style="margin:0 0 10px">${lines}${row ? ` · reaction ${row.global_index + 1}, vial ${i}` : ''}</p>${panels.length ? `${tlcFilterBar()}<div id="tlcread" class="tlcread" aria-live="polite">${panels.some(p => p.lane.zeroRf != null) ? 'Hover over a lane to read its Rf; the nearest spot is picked automatically. Click to pin a mark.' : 'This lane has no spot origin (microadjusted lane CSV needed for Rf).'}</div><div class="tlcbig"><div class="tlcstage"><canvas id="tlcbig"></canvas><canvas id="tlcov"></canvas></div></div><div class="hint" style="margin-top:8px">${cap}${panels.some(p => p.lane.zeroRf != null) ? ' · yellow ticks mark the spot origin, pink ticks the spots found' : ''}</div>${rfs ? `<div class="hint tlcrfs">${rfs}</div>` : ''}` : '<p>No lane picture for this well yet. Load a lane CSV and images first.</p>'}</div></div>`;
         overlay.addEventListener('click', e => { if (e.target === overlay) closePreview(); });
         prevFocus = document.activeElement; document.body.appendChild(overlay); document.addEventListener('keydown', escPreview, true);
-        const big = overlay.querySelector('#tlcbig'); if (big) tlcDraw(big, panels, 1);
+        const big = overlay.querySelector('#tlcbig'), lay = big && tlcDraw(big, panels, 1); if (lay) { tlcApplyFilter(); tlcHover(overlay, panels, lay); }
         const box = overlay.querySelector('.tlcbig'); if (box) box.scrollTop = box.scrollHeight;   // start at the spot origin
       }
       // tlc_rf_table.csv: one line per lane of every set, with the vial recipe, the front used, and up to 5 spots (Rf and strength).
@@ -215,6 +272,7 @@
         else if (a === 'pickimg') { const f = $('#tlcImg'); if (f) f.click(); }
         else if (a === 'open') tlcOpen(+b.dataset.i);
         else if (a === 'rfcsv') tlcRfCsv();
+        else if (a === 'freset') { tlc.filt = { b: 100, c: 100, inv: false }; tlcApplyFilter(); }
         else if (a === 'setsel') { tlc.cur = +b.dataset.i; tlcPersist(); render(); }
         else if (a === 'setadd') { tlc.sets.push(tlcNewSet(tlc.sets.length + 1)); tlc.cur = tlc.sets.length - 1; tlcPersist(); render(); }
         else if (a === 'setdel') { const s = tlcCur(); Object.values(s.imgs).forEach(im => im.bmp.close && im.bmp.close()); tlc.sets.splice(tlc.cur, 1); tlc.cur = Math.max(0, tlc.cur - 1); if (tlc.sets.length < 2) tlc.compare = false; tlcPersist(); toast(`Removed "${s.name}".`); render(); }
@@ -223,6 +281,7 @@
         const t = e.target; if (!t) return;
         if (t.id === 'tlcCsv' && t.files[0]) { const f = t.files[0]; t.value = ''; tlcLoadCsv(f); }
         else if (t.id === 'tlcImg' && t.files.length) { const fs = [...t.files]; t.value = ''; toast('Reading images…'); tlcLoadImages(fs); }
+        else if (t.dataset && t.dataset.tlc === 'finv') { tlc.filt.inv = t.checked; tlcApplyFilter(); }
         else if (t.dataset && t.dataset.tlc === 'show') { tlc.show[t.dataset.k2] = t.checked; render(); }
         else if (t.dataset && t.dataset.tlc === 'plate') { tlc.plate = +t.value; tlcPersist(); render(); }
         else if (t.dataset && t.dataset.tlc === 'frameW') { const v = +t.value; if (v >= 100) { tlcCur().frameW = v; tlcReset(tlcCur()); tlcPersist(); render(); } }
@@ -233,5 +292,5 @@
         else if (t.dataset && t.dataset.tlc === 'cmpkey') { tlc.cmpKey = t.value; tlcPersist(); render(); }
       });
       document.addEventListener('input', e => {
-        const t = e.target; if (t && t.dataset && t.dataset.tlc === 'zoom') { tlc.zoom = +t.value; const g = document.getElementById('tlcgrid'); if (g) { g.innerHTML = tlcCells(); tlcPaint(); } }
+        const t = e.target; if (t && t.dataset && (t.dataset.tlc === 'fb' || t.dataset.tlc === 'fc')) { tlc.filt[t.dataset.tlc === 'fb' ? 'b' : 'c'] = +t.value; tlcApplyFilter(); return; } if (t && t.dataset && t.dataset.tlc === 'zoom') { tlc.zoom = +t.value; const g = document.getElementById('tlcgrid'); if (g) { g.innerHTML = tlcCells(); tlcPaint(); } }
       });

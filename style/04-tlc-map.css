@@ -151,3 +151,45 @@
     .tlcrfs {
       margin-top: 10px
     }
+
+    /* Image filters bar, and the hover layer of the large lane view (app/45-tlc-map.js) */
+    .tlcfilt {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 12px;
+      padding: 8px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--soft);
+      font-size: 13px;
+      color: var(--fg2)
+    }
+
+    .tlcfilt label {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center
+    }
+
+    .tlcstage {
+      position: relative;
+      display: inline-block;
+      line-height: 0
+    }
+
+    #tlcov {
+      position: absolute;
+      left: 0;
+      top: 0;
+      cursor: crosshair;
+      touch-action: pan-y
+    }
+
+    .tlcread {
+      margin: 10px 0;
+      min-height: 20px;
+      font-size: 13px;
+      color: var(--fg2)
+    }

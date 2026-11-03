@@ -17,8 +17,8 @@
       // ---- saving with the run ----------------------------------------------------------------------------
       // Images: IndexedDB, one record per set + panel. Every call fails soft (private windows, blocked storage).
       let tlcDb = null;
-      const tlcIdb = () => tlcDb || (tlcDb = new Promise(res => { try { const q = indexedDB.open('robowski-tlc', 1); q.onupgradeneeded = () => q.result.createObjectStore('img'); q.onsuccess = () => res(q.result); q.onerror = () => res(null); } catch (e) { res(null); } }));
-      async function tlcIdbDo(mode, fn) { const db = await tlcIdb(); if (!db) return null; return new Promise(res => { try { const tx = db.transaction('img', mode), r = fn(tx.objectStore('img')); tx.oncomplete = () => res(r && 'result' in r ? r.result : true); tx.onerror = tx.onabort = () => res(null); } catch (e) { res(null); } }); }
+      const tlcIdb = () => tlcDb || (tlcDb = new Promise(res => { try { const q = indexedDB.open('robowski-tlc', 1); q.onupgradeneeded = () => q.result.createObjectStore('img'); q.onsuccess = () => res(q.result); q.onerror = q.onblocked = () => res(null); setTimeout(() => res(null), 3000); } catch (e) { res(null); } }));
+      async function tlcIdbDo(mode, fn) { const db = await tlcIdb(); if (!db) return null; return new Promise(res => { setTimeout(() => res(null), 8000); try { const tx = db.transaction('img', mode), r = fn(tx.objectStore('img')); tx.oncomplete = () => res(r && 'result' in r ? r.result : true); tx.onerror = tx.onabort = () => res(null); } catch (e) { res(null); } }); }
       const tlcImgPut = (uid, key, name, blob) => tlcIdbDo('readwrite', st => st.put({ name, blob }, uid + '/' + key));
       const tlcImgGet = (uid, key) => tlcIdbDo('readonly', st => st.get(uid + '/' + key));
       // What goes into the run: everything except the pictures and the cached measurements.
@@ -76,7 +76,7 @@
         const set = tlcCur(); let n = 0;
         for (const f of files) {
           const key = tlcKeyOf(f.name, set); if (!key) { toast(`${f.name}: could not tell which image this is (UV254, White or UV366). Put that in the file name.`); continue; }
-          try { const bmp = await createImageBitmap(f); if (set.imgs[key] && set.imgs[key].bmp.close) set.imgs[key].bmp.close(); set.imgs[key] = { name: f.name, bmp }; set.missing = []; tlcReset(set); n++; if (!(await tlcImgPut(set.uid, key, f.name, f))) tlcImgPut.warned || (tlcImgPut.warned = 1, toast('This browser would not keep the images, so they last until you reload; the lane file and settings are still saved with the run.')); }
+          try { const bmp = await createImageBitmap(f); if (set.imgs[key] && set.imgs[key].bmp.close) set.imgs[key].bmp.close(); set.imgs[key] = { name: f.name, bmp }; set.missing = []; tlcReset(set); n++; tlcImgPut(set.uid, key, f.name, f).then(ok => { if (!ok && !tlcImgPut.warned) { tlcImgPut.warned = 1; toast('This browser would not keep the images, so they last until you reload; the lane file and settings are still saved with the run.'); } }); }
           catch (e) { toast(`Could not open ${f.name}: ${e.message || e}`); }
         }
         if (n) { tlcPersist(); toast(`Loaded ${n} image${n === 1 ? '' : 's'}.`); } render();
